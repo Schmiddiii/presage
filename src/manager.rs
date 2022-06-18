@@ -286,6 +286,7 @@ impl<C: ConfigStore> Manager<C, Linking> {
 
         manager.config_store.save_state(&manager.state)?;
 
+        manager.update_device_name().await?;
         manager.register_pre_keys().await?;
         manager.set_account_attributes().await?;
         manager.request_contacts_sync().await?;
@@ -409,6 +410,24 @@ impl<C: ConfigStore> Manager<C, Registered> {
             config_store,
             state,
         })
+    }
+
+    async fn update_device_name(&mut self) -> Result<(), Error> {
+        if let Some(device_name) = &self.state.device_name {
+            let mut account_manager =
+                AccountManager::new(self.push_service()?, Some(*self.state.profile_key));
+            account_manager
+                .update_device_name(
+                    &mut rand::thread_rng(),
+                    device_name,
+                    self.config_store
+                        .get_identity_key_pair(None)
+                        .await?
+                        .public_key(),
+                )
+                .await?;
+        }
+        Ok(())
     }
 
     async fn register_pre_keys(&mut self) -> Result<(), Error> {
