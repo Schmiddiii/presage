@@ -372,6 +372,7 @@ impl<C: ConfigStore> Manager<C, Confirmation> {
             .confirm_verification_code(
                 confirm_code,
                 AccountAttributes {
+                    name: "Hello World".to_string(),
                     signaling_key: Some(signaling_key.to_vec()),
                     registration_id,
                     voice: false,
@@ -383,9 +384,12 @@ impl<C: ConfigStore> Manager<C, Confirmation> {
                     unrestricted_unidentified_access: false, // TODO: make this configurable?
                     discoverable_by_phone_number: true,
                     capabilities: DeviceCapabilities {
-                        uuid: true,
+                        announcement_group: false,
+                        change_number: false,
+                        sender_key: false,
+                        // uuid: true,
                         gv2: true,
-                        storage: false,
+                        // storage: false,
                         gv1_migration: true,
                     },
                 },
@@ -466,6 +470,7 @@ impl<C: ConfigStore> Manager<C, Registered> {
             AccountManager::new(self.push_service()?, Some(*self.state.profile_key));
         account_manager
             .set_account_attributes(AccountAttributes {
+                name: "Hello World 2".to_string(),
                 registration_id: self.state.registration_id,
                 signaling_key: None,
                 voice: false,
@@ -477,8 +482,11 @@ impl<C: ConfigStore> Manager<C, Registered> {
                 unrestricted_unidentified_access: false,
                 discoverable_by_phone_number: true,
                 capabilities: DeviceCapabilities {
-                    uuid: true,
-                    storage: false,
+                    // uuid: true,
+                    //storage: false,
+                    announcement_group: false,
+                    change_number: false,
+                    sender_key: false,
                     gv2: true,
                     gv1_migration: true,
                 },
