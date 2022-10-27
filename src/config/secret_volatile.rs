@@ -8,9 +8,10 @@ use libsignal_service::{
     models::Contact,
     prelude::{
         protocol::{
-            Context, Direction, IdentityKey, IdentityKeyPair, IdentityKeyStore, PreKeyRecord,
-            PreKeyStore, ProtocolAddress, SessionRecord, SessionStore, SessionStoreExt,
-            SignalProtocolError, SignedPreKeyRecord, SignedPreKeyStore,
+            Context, Direction, IdentityKey, IdentityKeyPair, IdentityKeyStore, PreKeyId,
+            PreKeyRecord, PreKeyStore, ProtocolAddress, SessionRecord, SessionStore,
+            SessionStoreExt, SignalProtocolError, SignedPreKeyId, SignedPreKeyRecord,
+            SignedPreKeyStore,
         },
         Uuid,
     },
@@ -39,8 +40,8 @@ pub struct SecretVolatileConfigStore {
     pre_keys_offset_id: Arc<Mutex<SecretId>>,
     next_signed_pre_key_id: Arc<Mutex<SecretId>>,
 
-    pre_keys: Arc<RwLock<HashMap<u32, Mutex<SecretVec<u8>>>>>,
-    signed_pre_keys: Arc<RwLock<HashMap<u32, Mutex<SecretVec<u8>>>>>,
+    pre_keys: Arc<RwLock<HashMap<PreKeyId, Mutex<SecretVec<u8>>>>>,
+    signed_pre_keys: Arc<RwLock<HashMap<SignedPreKeyId, Mutex<SecretVec<u8>>>>>,
 
     // XXX: we need interior mutability + Sync until we fix the trait definition to use &mut self in libsignal-service
     sessions: Arc<RwLock<HashMap<String, Mutex<SecretVec<u8>>>>>,
@@ -129,7 +130,7 @@ impl ContactsStore for SecretVolatileConfigStore {
 impl PreKeyStore for SecretVolatileConfigStore {
     async fn get_pre_key(
         &self,
-        prekey_id: u32,
+        prekey_id: PreKeyId,
         _ctx: Context,
     ) -> Result<PreKeyRecord, SignalProtocolError> {
         let buf = self.pre_keys.try_read().expect("poisoned mutex");
@@ -142,7 +143,7 @@ impl PreKeyStore for SecretVolatileConfigStore {
 
     async fn save_pre_key(
         &mut self,
-        prekey_id: u32,
+        prekey_id: PreKeyId,
         record: &PreKeyRecord,
         _ctx: Context,
     ) -> Result<(), SignalProtocolError> {
@@ -155,7 +156,7 @@ impl PreKeyStore for SecretVolatileConfigStore {
 
     async fn remove_pre_key(
         &mut self,
-        prekey_id: u32,
+        prekey_id: PreKeyId,
         _ctx: Context,
     ) -> Result<(), SignalProtocolError> {
         self.pre_keys
@@ -170,7 +171,7 @@ impl PreKeyStore for SecretVolatileConfigStore {
 impl SignedPreKeyStore for SecretVolatileConfigStore {
     async fn get_signed_pre_key(
         &self,
-        signed_prekey_id: u32,
+        signed_prekey_id: SignedPreKeyId,
         _ctx: Context,
     ) -> Result<SignedPreKeyRecord, SignalProtocolError> {
         let buf = self.signed_pre_keys.try_read().expect("poisoned mutex");
@@ -183,7 +184,7 @@ impl SignedPreKeyStore for SecretVolatileConfigStore {
 
     async fn save_signed_pre_key(
         &mut self,
-        signed_prekey_id: u32,
+        signed_prekey_id: SignedPreKeyId,
         record: &SignedPreKeyRecord,
         _ctx: Context,
     ) -> Result<(), SignalProtocolError> {
