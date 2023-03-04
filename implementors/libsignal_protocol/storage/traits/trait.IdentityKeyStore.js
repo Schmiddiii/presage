@@ -1,3 +1,5 @@
-(function() {var implementors = {};
-implementors["presage"] = [{"text":"impl IdentityKeyStore for <a class=\"struct\" href=\"presage/struct.SledConfigStore.html\" title=\"struct presage::SledConfigStore\">SledConfigStore</a>","synthetic":false,"types":["presage::config::sled::SledConfigStore"]},{"text":"impl IdentityKeyStore for <a class=\"struct\" href=\"presage/struct.VolatileConfigStore.html\" title=\"struct presage::VolatileConfigStore\">VolatileConfigStore</a>","synthetic":false,"types":["presage::config::volatile::VolatileConfigStore"]}];
-if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()
+(function() {var implementors = {
+"libsignal_protocol":[],
+"libsignal_service":[],
+"presage":[["impl <a class=\"trait\" href=\"libsignal_protocol/storage/traits/trait.IdentityKeyStore.html\" title=\"trait libsignal_protocol::storage::traits::IdentityKeyStore\">IdentityKeyStore</a> for <a class=\"struct\" href=\"presage/struct.SledStore.html\" title=\"struct presage::SledStore\">SledStore</a>"]]
+};if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()
