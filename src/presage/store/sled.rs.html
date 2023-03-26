@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/store/sled.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>sled.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Regular-1f7d512b176f0f72.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Bold-124a1ca42af929b6.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-6827029ac823cab7.css" id="mainThemeStyle"><link rel="stylesheet" id="themeStyle" href="../../../static.files/light-ebce58d0a40c3431.css"><link rel="stylesheet" disabled href="../../../static.files/dark-f23faae4a2daf9a6.css"><link rel="stylesheet" disabled href="../../../static.files/ayu-8af5e100b21cd173.css"><script id="default-settings" ></script><script src="../../../static.files/storage-d43fa987303ecbbb.js"></script><script defer src="../../../static.files/source-script-5cf2e01a42cc9858.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../static.files/main-c55e1eb52e1886b4.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../../presage/index.html"><img class="rust-logo" src="../../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../static.files/wheel-5ec35bf9ca753509.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/store/sled.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>sled.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Regular-1f7d512b176f0f72.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Bold-124a1ca42af929b6.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-93196c7a1c3542a8.css" id="mainThemeStyle"><link rel="stylesheet" id="themeStyle" href="../../../static.files/light-4743e13df3dfe8c4.css"><link rel="stylesheet" disabled href="../../../static.files/dark-0e1b889528bd466b.css"><link rel="stylesheet" disabled href="../../../static.files/ayu-65289d5d067c7c66.css"><script id="default-settings" ></script><script src="../../../static.files/storage-d43fa987303ecbbb.js"></script><script defer src="../../../static.files/source-script-ea63cb6500f71309.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../static.files/main-3367e395607fafc1.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../../presage/index.html"><img class="rust-logo" src="../../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../static.files/wheel-5ec35bf9ca753509.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -949,8 +949,143 @@
 <a href="#949" id="949">949</a>
 <a href="#950" id="950">950</a>
 <a href="#951" id="951">951</a>
+<a href="#952" id="952">952</a>
+<a href="#953" id="953">953</a>
+<a href="#954" id="954">954</a>
+<a href="#955" id="955">955</a>
+<a href="#956" id="956">956</a>
+<a href="#957" id="957">957</a>
+<a href="#958" id="958">958</a>
+<a href="#959" id="959">959</a>
+<a href="#960" id="960">960</a>
+<a href="#961" id="961">961</a>
+<a href="#962" id="962">962</a>
+<a href="#963" id="963">963</a>
+<a href="#964" id="964">964</a>
+<a href="#965" id="965">965</a>
+<a href="#966" id="966">966</a>
+<a href="#967" id="967">967</a>
+<a href="#968" id="968">968</a>
+<a href="#969" id="969">969</a>
+<a href="#970" id="970">970</a>
+<a href="#971" id="971">971</a>
+<a href="#972" id="972">972</a>
+<a href="#973" id="973">973</a>
+<a href="#974" id="974">974</a>
+<a href="#975" id="975">975</a>
+<a href="#976" id="976">976</a>
+<a href="#977" id="977">977</a>
+<a href="#978" id="978">978</a>
+<a href="#979" id="979">979</a>
+<a href="#980" id="980">980</a>
+<a href="#981" id="981">981</a>
+<a href="#982" id="982">982</a>
+<a href="#983" id="983">983</a>
+<a href="#984" id="984">984</a>
+<a href="#985" id="985">985</a>
+<a href="#986" id="986">986</a>
+<a href="#987" id="987">987</a>
+<a href="#988" id="988">988</a>
+<a href="#989" id="989">989</a>
+<a href="#990" id="990">990</a>
+<a href="#991" id="991">991</a>
+<a href="#992" id="992">992</a>
+<a href="#993" id="993">993</a>
+<a href="#994" id="994">994</a>
+<a href="#995" id="995">995</a>
+<a href="#996" id="996">996</a>
+<a href="#997" id="997">997</a>
+<a href="#998" id="998">998</a>
+<a href="#999" id="999">999</a>
+<a href="#1000" id="1000">1000</a>
+<a href="#1001" id="1001">1001</a>
+<a href="#1002" id="1002">1002</a>
+<a href="#1003" id="1003">1003</a>
+<a href="#1004" id="1004">1004</a>
+<a href="#1005" id="1005">1005</a>
+<a href="#1006" id="1006">1006</a>
+<a href="#1007" id="1007">1007</a>
+<a href="#1008" id="1008">1008</a>
+<a href="#1009" id="1009">1009</a>
+<a href="#1010" id="1010">1010</a>
+<a href="#1011" id="1011">1011</a>
+<a href="#1012" id="1012">1012</a>
+<a href="#1013" id="1013">1013</a>
+<a href="#1014" id="1014">1014</a>
+<a href="#1015" id="1015">1015</a>
+<a href="#1016" id="1016">1016</a>
+<a href="#1017" id="1017">1017</a>
+<a href="#1018" id="1018">1018</a>
+<a href="#1019" id="1019">1019</a>
+<a href="#1020" id="1020">1020</a>
+<a href="#1021" id="1021">1021</a>
+<a href="#1022" id="1022">1022</a>
+<a href="#1023" id="1023">1023</a>
+<a href="#1024" id="1024">1024</a>
+<a href="#1025" id="1025">1025</a>
+<a href="#1026" id="1026">1026</a>
+<a href="#1027" id="1027">1027</a>
+<a href="#1028" id="1028">1028</a>
+<a href="#1029" id="1029">1029</a>
+<a href="#1030" id="1030">1030</a>
+<a href="#1031" id="1031">1031</a>
+<a href="#1032" id="1032">1032</a>
+<a href="#1033" id="1033">1033</a>
+<a href="#1034" id="1034">1034</a>
+<a href="#1035" id="1035">1035</a>
+<a href="#1036" id="1036">1036</a>
+<a href="#1037" id="1037">1037</a>
+<a href="#1038" id="1038">1038</a>
+<a href="#1039" id="1039">1039</a>
+<a href="#1040" id="1040">1040</a>
+<a href="#1041" id="1041">1041</a>
+<a href="#1042" id="1042">1042</a>
+<a href="#1043" id="1043">1043</a>
+<a href="#1044" id="1044">1044</a>
+<a href="#1045" id="1045">1045</a>
+<a href="#1046" id="1046">1046</a>
+<a href="#1047" id="1047">1047</a>
+<a href="#1048" id="1048">1048</a>
+<a href="#1049" id="1049">1049</a>
+<a href="#1050" id="1050">1050</a>
+<a href="#1051" id="1051">1051</a>
+<a href="#1052" id="1052">1052</a>
+<a href="#1053" id="1053">1053</a>
+<a href="#1054" id="1054">1054</a>
+<a href="#1055" id="1055">1055</a>
+<a href="#1056" id="1056">1056</a>
+<a href="#1057" id="1057">1057</a>
+<a href="#1058" id="1058">1058</a>
+<a href="#1059" id="1059">1059</a>
+<a href="#1060" id="1060">1060</a>
+<a href="#1061" id="1061">1061</a>
+<a href="#1062" id="1062">1062</a>
+<a href="#1063" id="1063">1063</a>
+<a href="#1064" id="1064">1064</a>
+<a href="#1065" id="1065">1065</a>
+<a href="#1066" id="1066">1066</a>
+<a href="#1067" id="1067">1067</a>
+<a href="#1068" id="1068">1068</a>
+<a href="#1069" id="1069">1069</a>
+<a href="#1070" id="1070">1070</a>
+<a href="#1071" id="1071">1071</a>
+<a href="#1072" id="1072">1072</a>
+<a href="#1073" id="1073">1073</a>
+<a href="#1074" id="1074">1074</a>
+<a href="#1075" id="1075">1075</a>
+<a href="#1076" id="1076">1076</a>
+<a href="#1077" id="1077">1077</a>
+<a href="#1078" id="1078">1078</a>
+<a href="#1079" id="1079">1079</a>
+<a href="#1080" id="1080">1080</a>
+<a href="#1081" id="1081">1081</a>
+<a href="#1082" id="1082">1082</a>
+<a href="#1083" id="1083">1083</a>
+<a href="#1084" id="1084">1084</a>
+<a href="#1085" id="1085">1085</a>
+<a href="#1086" id="1086">1086</a>
 </pre><pre class="rust"><code><span class="kw">use </span>std::{
-    ops::Range,
+    ops::{Bound, Range, RangeBounds, RangeFull},
     path::Path,
     sync::Arc,
     time::{SystemTime, UNIX_EPOCH},
@@ -973,12 +1108,12 @@
     push_service::DEFAULT_DEVICE_ID,
     ServiceAddress,
 };
-<span class="kw">use </span>log::{debug, error, info, trace, warn};
+<span class="kw">use </span>log::{debug, error, trace, warn};
 <span class="kw">use </span>matrix_sdk_store_encryption::StoreCipher;
 <span class="kw">use </span>prost::Message;
 <span class="kw">use </span>serde::{de::DeserializeOwned, Deserialize, Serialize};
 <span class="kw">use </span>sha2::{Digest, Sha256};
-<span class="kw">use </span>sled::Batch;
+<span class="kw">use </span>sled::{Batch, IVec};
 
 <span class="kw">use super</span>::{ContactsStore, GroupsStore, MessageStore, StateStore};
 <span class="kw">use crate</span>::{
@@ -993,7 +1128,7 @@
 <span class="kw">const </span>SLED_TREE_SESSIONS: <span class="kw-2">&amp;</span>str = <span class="string">&quot;sessions&quot;</span>;
 <span class="kw">const </span>SLED_TREE_SIGNED_PRE_KEYS: <span class="kw-2">&amp;</span>str = <span class="string">&quot;signed_pre_keys&quot;</span>;
 <span class="kw">const </span>SLED_TREE_STATE: <span class="kw-2">&amp;</span>str = <span class="string">&quot;state&quot;</span>;
-<span class="kw">const </span>SLED_TREE_THREAD_PREFIX: <span class="kw-2">&amp;</span>str = <span class="string">&quot;threads&quot;</span>;
+<span class="kw">const </span>SLED_TREE_THREADS_PREFIX: <span class="kw-2">&amp;</span>str = <span class="string">&quot;threads&quot;</span>;
 
 <span class="kw">const </span>SLED_KEY_NEXT_SIGNED_PRE_KEY_ID: <span class="kw-2">&amp;</span>str = <span class="string">&quot;next_signed_pre_key_id&quot;</span>;
 <span class="kw">const </span>SLED_KEY_PRE_KEYS_OFFSET_ID: <span class="kw-2">&amp;</span>str = <span class="string">&quot;pre_keys_offset_id&quot;</span>;
@@ -1009,13 +1144,14 @@
 
 <span class="doccomment">/// Sometimes Migrations can&#39;t proceed without having to drop existing
 /// data. This allows you to configure, how these cases should be handled.
-</span><span class="attr">#[derive(PartialEq, Eq, Clone, Debug)]
+</span><span class="attr">#[derive(Default, PartialEq, Eq, Clone, Debug)]
 </span><span class="kw">pub enum </span>MigrationConflictStrategy {
     <span class="doccomment">/// Just drop the data, we don&#39;t care that we have to register or link again
     </span>Drop,
     <span class="doccomment">/// Raise a `Error::MigrationConflict` error with the path to the
     /// DB in question. The caller then has to take care about what they want
     /// to do and try again after.
+    </span><span class="attr">#[default]
     </span>Raise,
     <span class="doccomment">/// _Default_: The _entire_ database is backed up under, before the databases are dropped.
     </span>BackupAndDrop,
@@ -1164,15 +1300,15 @@
     <span class="doccomment">/// build a hashed messages thread key
     </span><span class="kw">fn </span>messages_thread_tree_name(<span class="kw-2">&amp;</span><span class="self">self</span>, t: <span class="kw-2">&amp;</span>Thread) -&gt; String {
         <span class="kw">let </span>key = <span class="kw">match </span>t {
-            Thread::Contact(uuid) =&gt; <span class="macro">format!</span>(<span class="string">&quot;{SLED_TREE_THREAD_PREFIX}:contact:{uuid}&quot;</span>),
+            Thread::Contact(uuid) =&gt; <span class="macro">format!</span>(<span class="string">&quot;{SLED_TREE_THREADS_PREFIX}:contact:{uuid}&quot;</span>),
             Thread::Group(group_id) =&gt; <span class="macro">format!</span>(
-                <span class="string">&quot;{SLED_TREE_THREAD_PREFIX}:group:{}&quot;</span>,
+                <span class="string">&quot;{SLED_TREE_THREADS_PREFIX}:group:{}&quot;</span>,
                 base64::encode(group_id)
             ),
         };
         <span class="kw">let </span><span class="kw-2">mut </span>hasher = Sha256::new();
         hasher.update(key.as_bytes());
-        <span class="macro">format!</span>(<span class="string">&quot;{SLED_TREE_THREAD_PREFIX}:{:x}&quot;</span>, hasher.finalize())
+        <span class="macro">format!</span>(<span class="string">&quot;{SLED_TREE_THREADS_PREFIX}:{:x}&quot;</span>, hasher.finalize())
     }
 }
 
@@ -1186,41 +1322,37 @@
 
     <span class="kw">let </span>run_migrations = <span class="kw">move </span>|| {
         <span class="kw">let </span><span class="kw-2">mut </span>store = SledStore::new(db_path, passphrase)<span class="question-mark">?</span>;
-        <span class="kw">for </span>step <span class="kw">in </span>store.schema_version().steps() {
+        <span class="kw">let </span>schema_version = store.schema_version();
+        <span class="kw">for </span>step <span class="kw">in </span>schema_version.steps() {
             <span class="kw">match </span><span class="kw-2">&amp;</span>step {
                 SchemaVersion::V1 =&gt; {
-                    <span class="macro">warn!</span>(<span class="string">&quot;migrating from v0, nothing to do&quot;</span>)
+                    <span class="macro">debug!</span>(<span class="string">&quot;migrating from v0, nothing to do&quot;</span>)
                 }
                 SchemaVersion::V2 =&gt; {
-                    <span class="macro">info!</span>(<span class="string">&quot;migrating from schema v1 to v2: encrypting state if cipher is enabled&quot;</span>);
+                    <span class="macro">debug!</span>(<span class="string">&quot;migrating from schema v1 to v2: encrypting state if cipher is enabled&quot;</span>);
 
                     <span class="comment">// load registration data the old school way
-                    </span><span class="kw">let </span>data = store
-                        .db
-                        .get(SLED_KEY_REGISTRATION)<span class="question-mark">?
-                        </span>.ok_or(Error::NotYetRegisteredError)<span class="question-mark">?</span>;
-                    <span class="kw">let </span>state = serde_json::from_slice(<span class="kw-2">&amp;</span>data).map_err(Error::from)<span class="question-mark">?</span>;
+                    </span><span class="kw">if let </span><span class="prelude-val">Some</span>(data) = store.db.get(SLED_KEY_REGISTRATION)<span class="question-mark">? </span>{
+                        <span class="kw">let </span>state = serde_json::from_slice(<span class="kw-2">&amp;</span>data).map_err(Error::from)<span class="question-mark">?</span>;
 
-                    <span class="comment">// save it the new school way
-                    </span>store.save_state(<span class="kw-2">&amp;</span>state)<span class="question-mark">?</span>;
+                        <span class="comment">// save it the new school way
+                        </span>store.save_state(<span class="kw-2">&amp;</span>state)<span class="question-mark">?</span>;
 
-                    <span class="comment">// remove old data
-                    </span>store.db.remove(SLED_KEY_REGISTRATION)<span class="question-mark">?</span>;
+                        <span class="comment">// remove old data
+                        </span>store.db.remove(SLED_KEY_REGISTRATION)<span class="question-mark">?</span>;
+                    }
                 }
                 <span class="kw">_ </span>=&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(Error::MigrationConflict),
             }
 
             store.insert(SLED_TREE_STATE, SLED_KEY_SCHEMA_VERSION, step)<span class="question-mark">?</span>;
+            store.db.flush()<span class="question-mark">?</span>;
         }
 
         <span class="prelude-val">Ok</span>(())
     };
 
-    <span class="kw">let </span>migration_res = run_migrations();
-
-    <span class="kw">if let </span><span class="prelude-val">Err</span>(Error::MigrationConflict) = migration_res {
-        <span class="kw">let </span>db = sled::open(db_path)<span class="question-mark">?</span>;
-
+    <span class="kw">if let </span><span class="prelude-val">Err</span>(error) = run_migrations() {
         <span class="kw">match </span>migration_conflict_strategy {
             MigrationConflictStrategy::BackupAndDrop =&gt; {
                 <span class="kw">let </span><span class="kw-2">mut </span>new_db_path = db_path.to_path_buf();
@@ -1233,17 +1365,12 @@
                 ));
                 fs_extra::dir::create_all(<span class="kw-2">&amp;</span>new_db_path, <span class="bool-val">false</span>)<span class="question-mark">?</span>;
                 fs_extra::dir::copy(db_path, new_db_path, <span class="kw-2">&amp;</span>fs_extra::dir::CopyOptions::new())<span class="question-mark">?</span>;
-
-                <span class="kw">for </span>tree <span class="kw">in </span>db.tree_names() {
-                    db.drop_tree(tree)<span class="question-mark">?</span>;
-                }
+                fs_extra::dir::remove(db_path)<span class="question-mark">?</span>;
             }
             MigrationConflictStrategy::Drop =&gt; {
-                <span class="kw">for </span>tree <span class="kw">in </span>db.tree_names() {
-                    db.drop_tree(tree)<span class="question-mark">?</span>;
-                }
+                fs_extra::dir::remove(db_path)<span class="question-mark">?</span>;
             }
-            MigrationConflictStrategy::Raise =&gt; migration_res<span class="question-mark">?</span>,
+            MigrationConflictStrategy::Raise =&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(error),
         }
     }
 
@@ -1252,9 +1379,8 @@
 
 <span class="kw">impl </span>StateStore&lt;Registered&gt; <span class="kw">for </span>SledStore {
     <span class="kw">fn </span>load_state(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;Registered, Error&gt; {
-        <span class="prelude-val">Ok</span>(<span class="self">self
-            </span>.get(SLED_TREE_STATE, SLED_KEY_REGISTRATION)<span class="question-mark">?
-            </span>.ok_or(Error::NotYetRegisteredError)<span class="question-mark">?</span>)
+        <span class="self">self</span>.get(SLED_TREE_STATE, SLED_KEY_REGISTRATION)<span class="question-mark">?
+            </span>.ok_or(Error::NotYetRegisteredError)
     }
 
     <span class="kw">fn </span>save_state(<span class="kw-2">&amp;mut </span><span class="self">self</span>, state: <span class="kw-2">&amp;</span>Registered) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
@@ -1264,12 +1390,34 @@
 }
 
 <span class="kw">impl </span>Store <span class="kw">for </span>SledStore {
+    <span class="kw">fn </span>clear_registration(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
+        <span class="self">self</span>.db.remove(SLED_KEY_REGISTRATION)<span class="question-mark">?</span>;
+
+        <span class="self">self</span>.db.drop_tree(SLED_TREE_IDENTITIES)<span class="question-mark">?</span>;
+        <span class="self">self</span>.db.drop_tree(SLED_TREE_PRE_KEYS)<span class="question-mark">?</span>;
+        <span class="self">self</span>.db.drop_tree(SLED_TREE_SENDER_KEYS)<span class="question-mark">?</span>;
+        <span class="self">self</span>.db.drop_tree(SLED_TREE_SESSIONS)<span class="question-mark">?</span>;
+        <span class="self">self</span>.db.drop_tree(SLED_TREE_SIGNED_PRE_KEYS)<span class="question-mark">?</span>;
+        <span class="self">self</span>.db.drop_tree(SLED_TREE_STATE)<span class="question-mark">?</span>;
+
+        <span class="self">self</span>.db.flush()<span class="question-mark">?</span>;
+
+        <span class="prelude-val">Ok</span>(())
+    }
+
     <span class="kw">fn </span>clear(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
-        <span class="comment">// drop all trees
-        </span><span class="kw">for </span>tree <span class="kw">in </span><span class="self">self</span>.db.tree_names() {
-            <span class="kw">if let </span><span class="prelude-val">Err</span>(error) = <span class="self">self</span>.db.drop_tree(tree) {
-                <span class="macro">log::warn!</span>(<span class="string">&quot;fail to drop tree on call to Store::clear(): {error}&quot;</span>);
-            }
+        <span class="self">self</span>.clear_registration()<span class="question-mark">?</span>;
+
+        <span class="self">self</span>.db.drop_tree(SLED_TREE_CONTACTS)<span class="question-mark">?</span>;
+        <span class="self">self</span>.db.drop_tree(SLED_TREE_GROUPS)<span class="question-mark">?</span>;
+
+        <span class="kw">for </span>tree <span class="kw">in </span><span class="self">self
+            </span>.db
+            .tree_names()
+            .into_iter()
+            .filter(|n| n.starts_with(SLED_TREE_THREADS_PREFIX.as_bytes()))
+        {
+            <span class="self">self</span>.db.drop_tree(tree)<span class="question-mark">?</span>;
         }
 
         <span class="self">self</span>.db.flush()<span class="question-mark">?</span>;
@@ -1704,7 +1852,7 @@
         <span class="kw">for </span>name <span class="kw">in </span><span class="self">self</span>.db.tree_names() {
             <span class="kw">if </span>name
                 .as_ref()
-                .starts_with(SLED_TREE_THREAD_PREFIX.as_bytes())
+                .starts_with(SLED_TREE_THREADS_PREFIX.as_bytes())
             {
                 <span class="self">self</span>.db.drop_tree(<span class="kw-2">&amp;</span>name)<span class="question-mark">?</span>;
             }
@@ -1720,7 +1868,7 @@
             message.metadata.timestamp,
         );
 
-        <span class="kw">let </span>tree = <span class="self">self</span>.messages_thread_tree_name(thread);
+        <span class="kw">let </span>tree = <span class="self">self</span>.messages_thread_tree_name(<span class="kw-2">&amp;</span>thread);
         <span class="kw">let </span>key = message.metadata.timestamp.to_be_bytes();
 
         <span class="kw">let </span>proto: ContentProto = message.into();
@@ -1756,33 +1904,43 @@
         }
     }
 
-    <span class="kw">fn </span>messages(<span class="kw-2">&amp;</span><span class="self">self</span>, thread: <span class="kw-2">&amp;</span>Thread, from: <span class="prelude-ty">Option</span>&lt;u64&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::MessagesIter, Error&gt; {
+    <span class="kw">fn </span>messages(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        thread: <span class="kw-2">&amp;</span>Thread,
+        range: <span class="kw">impl </span>RangeBounds&lt;u64&gt;,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::MessagesIter, Error&gt; {
         <span class="kw">let </span>tree_thread = <span class="self">self</span>.tree(<span class="self">self</span>.messages_thread_tree_name(thread))<span class="question-mark">?</span>;
         <span class="macro">debug!</span>(<span class="string">&quot;{} messages in this tree&quot;</span>, tree_thread.len());
-        <span class="kw">let </span>iter = <span class="kw">if let </span><span class="prelude-val">Some</span>(from) = from {
-            tree_thread.range(from.to_be_bytes()..)
-        } <span class="kw">else </span>{
-            tree_thread.range::&lt;<span class="kw-2">&amp;</span>[u8], std::ops::RangeFull&gt;(..)
+
+        <span class="kw">let </span>iter = <span class="kw">match </span>(range.start_bound(), range.end_bound()) {
+            (Bound::Included(start), Bound::Unbounded) =&gt; tree_thread.range(start.to_be_bytes()..),
+            (Bound::Included(start), Bound::Excluded(end)) =&gt; {
+                tree_thread.range(start.to_be_bytes()..end.to_be_bytes())
+            }
+            (Bound::Included(start), Bound::Included(end)) =&gt; {
+                tree_thread.range(start.to_be_bytes()..=end.to_be_bytes())
+            }
+            (Bound::Unbounded, Bound::Included(end)) =&gt; tree_thread.range(..=end.to_be_bytes()),
+            (Bound::Unbounded, Bound::Excluded(end)) =&gt; tree_thread.range(..end.to_be_bytes()),
+            (Bound::Unbounded, Bound::Unbounded) =&gt; tree_thread.range::&lt;[u8; <span class="number">8</span>], RangeFull&gt;(..),
+            (Bound::Excluded(<span class="kw">_</span>), <span class="kw">_</span>) =&gt; <span class="macro">unreachable!</span>(<span class="string">&quot;range that excludes the initial value&quot;</span>),
         };
+
         <span class="prelude-val">Ok</span>(SledMessagesIter {
             cipher: <span class="self">self</span>.cipher.clone(),
-            iter: iter.rev(),
+            iter,
         })
     }
 }
 
 <span class="kw">pub struct </span>SledMessagesIter {
     cipher: <span class="prelude-ty">Option</span>&lt;Arc&lt;StoreCipher&gt;&gt;,
-    iter: std::iter::Rev&lt;sled::Iter&gt;,
+    iter: sled::Iter,
 }
 
-<span class="kw">impl </span>Iterator <span class="kw">for </span>SledMessagesIter {
-    <span class="kw">type </span>Item = <span class="prelude-ty">Result</span>&lt;Content, Error&gt;;
-
-    <span class="kw">fn </span>next(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="self">Self</span>::Item&gt; {
-        <span class="self">self</span>.iter
-            .next()<span class="question-mark">?
-            </span>.map_err(Error::from)
+<span class="kw">impl </span>SledMessagesIter {
+    <span class="kw">fn </span>decode(<span class="kw-2">&amp;</span><span class="self">self</span>, elem: <span class="prelude-ty">Result</span>&lt;(IVec, IVec), sled::Error&gt;) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="prelude-ty">Result</span>&lt;Content, Error&gt;&gt; {
+        elem.map_err(Error::from)
             .and_then(|(<span class="kw">_</span>, value)| {
                 <span class="self">self</span>.cipher.as_ref().map_or_else(
                     || serde_json::from_slice(<span class="kw-2">&amp;</span>value).map_err(Error::from),
@@ -1794,15 +1952,41 @@
     }
 }
 
+<span class="kw">impl </span>Iterator <span class="kw">for </span>SledMessagesIter {
+    <span class="kw">type </span>Item = <span class="prelude-ty">Result</span>&lt;Content, Error&gt;;
+
+    <span class="kw">fn </span>next(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="self">Self</span>::Item&gt; {
+        <span class="kw">let </span>elem = <span class="self">self</span>.iter.next()<span class="question-mark">?</span>;
+        <span class="self">self</span>.decode(elem)
+    }
+}
+
+<span class="kw">impl </span>DoubleEndedIterator <span class="kw">for </span>SledMessagesIter {
+    <span class="kw">fn </span>next_back(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="self">Self</span>::Item&gt; {
+        <span class="kw">let </span>elem = <span class="self">self</span>.iter.next_back()<span class="question-mark">?</span>;
+        <span class="self">self</span>.decode(elem)
+    }
+}
+
 <span class="attr">#[cfg(test)]
 </span><span class="kw">mod </span>tests {
     <span class="kw">use </span>core::fmt;
 
-    <span class="kw">use </span>libsignal_service::prelude::protocol::{
-        <span class="self">self</span>, Direction, IdentityKeyStore, PreKeyRecord, PreKeyStore, SessionRecord, SessionStore,
-        SignedPreKeyRecord, SignedPreKeyStore,
+    <span class="kw">use </span>libsignal_service::{
+        content::{ContentBody, Metadata},
+        prelude::{
+            protocol::{
+                <span class="self">self</span>, Direction, IdentityKeyStore, PreKeyRecord, PreKeyStore, SessionRecord,
+                SessionStore, SignedPreKeyRecord, SignedPreKeyStore,
+            },
+            Uuid,
+        },
+        proto::DataMessage,
+        ServiceAddress,
     };
     <span class="kw">use </span>quickcheck::{Arbitrary, Gen};
+
+    <span class="kw">use crate</span>::{MessageStore, Thread};
 
     <span class="kw">use </span><span class="kw">super</span>::SledStore;
 
@@ -1811,6 +1995,9 @@
 
     <span class="attr">#[derive(Clone)]
     </span><span class="kw">struct </span>KeyPair(protocol::KeyPair);
+
+    <span class="attr">#[derive(Debug, Clone)]
+    </span><span class="kw">struct </span>Content(libsignal_service::prelude::Content);
 
     <span class="kw">impl </span>fmt::Debug <span class="kw">for </span>KeyPair {
         <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Formatter&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; fmt::Result {
@@ -1830,6 +2017,41 @@
         <span class="kw">fn </span>arbitrary(_g: <span class="kw-2">&amp;mut </span>Gen) -&gt; <span class="self">Self </span>{
             <span class="comment">// Gen is not rand::CryptoRng here, see https://github.com/BurntSushi/quickcheck/issues/241
             </span>KeyPair(protocol::KeyPair::generate(<span class="kw-2">&amp;mut </span>rand::thread_rng()))
+        }
+    }
+
+    <span class="kw">impl </span>Arbitrary <span class="kw">for </span>Content {
+        <span class="kw">fn </span>arbitrary(g: <span class="kw-2">&amp;mut </span>Gen) -&gt; <span class="self">Self </span>{
+            <span class="kw">let </span>timestamp: u64 = Arbitrary::arbitrary(g);
+            <span class="kw">let </span>contacts = [
+                Uuid::from_u128(Arbitrary::arbitrary(g)),
+                Uuid::from_u128(Arbitrary::arbitrary(g)),
+                Uuid::from_u128(Arbitrary::arbitrary(g)),
+            ];
+            <span class="kw">let </span>metadata = Metadata {
+                sender: ServiceAddress {
+                    uuid: <span class="kw-2">*</span>g.choose(<span class="kw-2">&amp;</span>contacts).unwrap(),
+                },
+                sender_device: Arbitrary::arbitrary(g),
+                timestamp,
+                needs_receipt: Arbitrary::arbitrary(g),
+                unidentified_sender: Arbitrary::arbitrary(g),
+            };
+            <span class="kw">let </span>content_body = ContentBody::DataMessage(DataMessage {
+                body: Arbitrary::arbitrary(g),
+                timestamp: <span class="prelude-val">Some</span>(timestamp),
+                ..Default::default()
+            });
+            <span class="self">Self</span>(libsignal_service::prelude::Content::from_body(
+                content_body,
+                metadata,
+            ))
+        }
+    }
+
+    <span class="kw">impl </span>Arbitrary <span class="kw">for </span>Thread {
+        <span class="kw">fn </span>arbitrary(g: <span class="kw-2">&amp;mut </span>Gen) -&gt; <span class="self">Self </span>{
+            <span class="self">Self</span>::Contact(Uuid::from_u128(Arbitrary::arbitrary(g)))
         }
     }
 
@@ -1899,6 +2121,54 @@
             .unwrap()
             == signed_pre_key_record.serialize().unwrap()
     }
+
+    <span class="kw">fn </span>content_with_timestamp(content: <span class="kw-2">&amp;</span>Content, ts: u64) -&gt; libsignal_service::prelude::Content {
+        libsignal_service::prelude::Content {
+            metadata: Metadata {
+                timestamp: ts,
+                ..content.<span class="number">0</span>.metadata.clone()
+            },
+            body: content.<span class="number">0</span>.body.clone(),
+        }
+    }
+
+    <span class="attr">#[quickcheck_async::tokio]
+    </span><span class="kw">async fn </span>test_store_messages(thread: Thread, content: Content) -&gt; anyhow::Result&lt;()&gt; {
+        <span class="kw">let </span><span class="kw-2">mut </span>db = SledStore::temporary()<span class="question-mark">?</span>;
+        db.save_message(<span class="kw-2">&amp;</span>thread, content_with_timestamp(<span class="kw-2">&amp;</span>content, <span class="number">1678295210</span>))<span class="question-mark">?</span>;
+        db.save_message(<span class="kw-2">&amp;</span>thread, content_with_timestamp(<span class="kw-2">&amp;</span>content, <span class="number">1678295220</span>))<span class="question-mark">?</span>;
+        db.save_message(<span class="kw-2">&amp;</span>thread, content_with_timestamp(<span class="kw-2">&amp;</span>content, <span class="number">1678295230</span>))<span class="question-mark">?</span>;
+        db.save_message(<span class="kw-2">&amp;</span>thread, content_with_timestamp(<span class="kw-2">&amp;</span>content, <span class="number">1678295240</span>))<span class="question-mark">?</span>;
+        db.save_message(<span class="kw-2">&amp;</span>thread, content_with_timestamp(<span class="kw-2">&amp;</span>content, <span class="number">1678280000</span>))<span class="question-mark">?</span>;
+
+        <span class="macro">assert_eq!</span>(db.messages(<span class="kw-2">&amp;</span>thread, ..).unwrap().count(), <span class="number">5</span>);
+        <span class="macro">assert_eq!</span>(db.messages(<span class="kw-2">&amp;</span>thread, <span class="number">0</span>..).unwrap().count(), <span class="number">5</span>);
+        <span class="macro">assert_eq!</span>(db.messages(<span class="kw-2">&amp;</span>thread, <span class="number">1678280000</span>..).unwrap().count(), <span class="number">5</span>);
+
+        <span class="macro">assert_eq!</span>(db.messages(<span class="kw-2">&amp;</span>thread, <span class="number">0</span>..<span class="number">1678280000</span>)<span class="question-mark">?</span>.count(), <span class="number">0</span>);
+        <span class="macro">assert_eq!</span>(db.messages(<span class="kw-2">&amp;</span>thread, <span class="number">0</span>..<span class="number">1678295210</span>)<span class="question-mark">?</span>.count(), <span class="number">1</span>);
+        <span class="macro">assert_eq!</span>(db.messages(<span class="kw-2">&amp;</span>thread, <span class="number">1678295210</span>..<span class="number">1678295240</span>)<span class="question-mark">?</span>.count(), <span class="number">3</span>);
+        <span class="macro">assert_eq!</span>(db.messages(<span class="kw-2">&amp;</span>thread, <span class="number">1678295210</span>..=<span class="number">1678295240</span>)<span class="question-mark">?</span>.count(), <span class="number">4</span>);
+
+        <span class="macro">assert_eq!</span>(
+            db.messages(<span class="kw-2">&amp;</span>thread, <span class="number">0</span>..=<span class="number">1678295240</span>)<span class="question-mark">?
+                </span>.next()
+                .unwrap()<span class="question-mark">?
+                </span>.metadata
+                .timestamp,
+            <span class="number">1678280000
+        </span>);
+        <span class="macro">assert_eq!</span>(
+            db.messages(<span class="kw-2">&amp;</span>thread, <span class="number">0</span>..=<span class="number">1678295240</span>)<span class="question-mark">?
+                </span>.next_back()
+                .unwrap()<span class="question-mark">?
+                </span>.metadata
+                .timestamp,
+            <span class="number">1678295240
+        </span>);
+
+        <span class="prelude-val">Ok</span>(())
+    }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="presage" data-themes="" data-resource-suffix="" data-rustdoc-version="1.67.1 (d5a82bbd2 2023-02-07)" data-search-js="search-444266647c4dba98.js" data-settings-js="settings-bebeae96e00e4617.js" data-settings-css="settings-af96d9e2fc13e081.css" ></div></body></html>
+</section></main><div id="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="presage" data-themes="" data-resource-suffix="" data-rustdoc-version="1.68.0 (2c8cc3432 2023-03-06)" data-search-js="search-98d53477a794af0b.js" data-settings-js="settings-c3c521c753752a1a.js" data-settings-css="settings-08ddfdda51b8ee2e.css" ></div></body></html>
