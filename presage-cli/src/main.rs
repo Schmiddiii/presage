@@ -99,7 +99,7 @@ enum Cmd {
         token: String,
         #[clap(
             long = "captcha",
-            help = "Captcha obtained from https://signalcaptchas.org/registration/generate.html"
+            help = "Captcha obtained from https://signalcaptchas.org/challenge/generate.html"
         )]
         captcha: Url,
     },
