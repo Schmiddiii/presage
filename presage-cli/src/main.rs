@@ -90,6 +90,19 @@ enum Cmd {
         )]
         device_name: String,
     },
+    #[clap(about = "Submit captcha challenge")]
+    SubmitCaptcha {
+        #[clap(
+            long = "token",
+            help = "The token from the captcha error message."
+        )]
+        token: String,
+        #[clap(
+            long = "captcha",
+            help = "Captcha obtained from https://signalcaptchas.org/registration/generate.html"
+        )]
+        captcha: Url,
+    },
     #[clap(about = "Get information on the registered user")]
     Whoami,
     #[clap(about = "Retrieve the user profile")]
@@ -498,6 +511,10 @@ async fn run<C: Store + 'static>(subcommand: Cmd, config_store: C) -> anyhow::Re
                     println!("{err:?}");
                 }
             }
+        }
+        Cmd::SubmitCaptcha { token, captcha } => {
+            let manager = Manager::load_registered(config_store).await?;
+            manager.submit_recaptcha_challenge(&token, captcha.as_str()).await?;
         }
         Cmd::Receive { notifications } => {
             let mut manager = Manager::load_registered(config_store).await?;
