@@ -647,7 +647,7 @@ impl<C: Store> Manager<C, Registered> {
         Ok(())
     }
 
-    async fn sync_contacts(&mut self) -> Result<(), Error<C::Error>> {
+    pub async fn sync_contacts(&mut self) -> Result<(), Error<C::Error>> {
         let messages = self.receive_messages_stream(true).await?;
         pin_mut!(messages);
 
