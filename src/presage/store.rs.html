@@ -210,7 +210,6 @@
 <a href="#210" id="210">210</a>
 <a href="#211" id="211">211</a>
 <a href="#212" id="212">212</a>
-<a href="#213" id="213">213</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>std::{fmt, ops::RangeBounds};
 
 <span class="kw">use crate</span>::{manager::Registered, GroupMasterKeyBytes};
@@ -218,11 +217,10 @@
     content::ContentBody,
     groups_v2::Group,
     models::Contact,
-    prelude::{
-        protocol::{ProtocolStore, SenderKeyStore, SessionStoreExt},
-        Content, ProfileKey, Uuid, UuidError,
-    },
+    prelude::{Content, ProfileKey, Uuid, UuidError},
     proto::{sync_message::Sent, DataMessage, GroupContextV2, SyncMessage},
+    protocol::{ProtocolStore, SenderKeyStore},
+    session_store::SessionStoreExt,
     Profile,
 };
 <span class="kw">use </span>serde::{Deserialize, Serialize};
