@@ -656,7 +656,7 @@ impl<C: Store> Manager<C, Registered> {
         info!("waiting for contacts sync for up to 60 seconds");
 
         tokio::time::timeout(
-            Duration::from_secs(60),
+            Duration::from_secs(600),
             self.wait_for_contacts_sync(messages),
         )
         .await
