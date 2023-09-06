@@ -892,7 +892,9 @@ impl<C: Store> Manager<C, Registered> {
             loop {
                 match state.encrypted_messages.next().await {
                     Some(Ok(envelope)) => {
-                        match state.service_cipher.open_envelope(envelope).await {
+                        let c = state.service_cipher.open_envelope(envelope).await;
+                        log::trace!("Got from stream: {:#?}", c);
+                        match c {
                             Ok(Some(content)) => {
                                 // contacts synchronization sent from the primary device (happens after linking, or on demand)
                                 if let ContentBody::SynchronizeMessage(SyncMessage {
@@ -989,6 +991,7 @@ impl<C: Store> Manager<C, Registered> {
         let online_only = false;
         let recipient = recipient_addr.into();
         let mut content_body: ContentBody = message.into();
+        log::trace!("Sending message: {:#?}.", content_body);
 
         // Only update the expiration timer if it is not set.
         match content_body {
@@ -1121,10 +1124,14 @@ impl<C: Store> Manager<C, Registered> {
             recipients.push((member.uuid.into(), unidentified_access));
         }
 
+        log::trace!("Sending message to group: {:#?}", message);
+
         let online_only = false;
         let results = sender
             .send_message_to_group(recipients, message.clone(), timestamp, online_only)
             .await;
+
+        log::trace!("Result {:#?}", results);
 
         // return first error if any
         results.into_iter().find(|res| res.is_err()).transpose()?;
