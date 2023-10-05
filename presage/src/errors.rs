@@ -67,6 +67,10 @@ pub enum Error<S: std::error::Error> {
     RequestingCodeForbidden(libsignal_service::push_service::RegistrationSessionMetadataResponse),
     #[error("Unverified registration session (i.e. wrong verification code)")]
     UnverifiedRegistrationSession,
+    #[error("Failed to link secondary device")]
+    ServiceLinkError(#[from] libsignal_service::LinkError),
+    #[error("An operation was requested that requires the registration to be primary, but it was only secondary")]
+    NotPrimaryDevice,
 }
 
 impl<S: StoreError> From<S> for Error<S> {
