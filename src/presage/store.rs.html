@@ -392,14 +392,25 @@
 <a href="#392" id="392">392</a>
 <a href="#393" id="393">393</a>
 <a href="#394" id="394">394</a>
+<a href="#395" id="395">395</a>
+<a href="#396" id="396">396</a>
+<a href="#397" id="397">397</a>
+<a href="#398" id="398">398</a>
+<a href="#399" id="399">399</a>
+<a href="#400" id="400">400</a>
+<a href="#401" id="401">401</a>
+<a href="#402" id="402">402</a>
+<a href="#403" id="403">403</a>
+<a href="#404" id="404">404</a>
 </pre></div><pre class="rust"><code><span class="doccomment">//! Traits that are used by the manager for storing the data.
 
 </span><span class="kw">use </span>std::{fmt, ops::RangeBounds, time::SystemTime};
 
 <span class="kw">use </span>libsignal_service::{
     content::{ContentBody, Metadata},
-    groups_v2::Group,
+    groups_v2::{Group, Timer},
     models::Contact,
+    pre_keys::PreKeysStore,
     prelude::{Content, ProfileKey, Uuid, UuidError},
     proto::{
         sync_message::{<span class="self">self</span>, Sent},
@@ -436,25 +447,6 @@
 
     <span class="doccomment">/// Clear registration data (including keys), but keep received messages, groups and contacts.
     </span><span class="kw">fn </span>clear_registration(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;(), <span class="self">Self</span>::StateStoreError&gt;;
-}
-
-<span class="doccomment">/// Stores the keys published ahead of time, pre-keys
-///
-/// &lt;https://signal.org/docs/specifications/x3dh/&gt;
-</span><span class="kw">pub trait </span>PreKeyStoreExt {
-    <span class="kw">type </span>PreKeyStoreExtError: StoreError;
-
-    <span class="kw">fn </span>pre_keys_offset_id(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;u32, <span class="self">Self</span>::PreKeyStoreExtError&gt;;
-
-    <span class="kw">fn </span>set_pre_keys_offset_id(<span class="kw-2">&amp;mut </span><span class="self">self</span>, id: u32) -&gt; <span class="prelude-ty">Result</span>&lt;(), <span class="self">Self</span>::PreKeyStoreExtError&gt;;
-
-    <span class="kw">fn </span>next_signed_pre_key_id(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;u32, <span class="self">Self</span>::PreKeyStoreExtError&gt;;
-
-    <span class="kw">fn </span>next_pq_pre_key_id(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;u32, <span class="self">Self</span>::PreKeyStoreExtError&gt;;
-
-    <span class="kw">fn </span>set_next_signed_pre_key_id(<span class="kw-2">&amp;mut </span><span class="self">self</span>, id: u32) -&gt; <span class="prelude-ty">Result</span>&lt;(), <span class="self">Self</span>::PreKeyStoreExtError&gt;;
-
-    <span class="kw">fn </span>set_next_pq_pre_key_id(<span class="kw-2">&amp;mut </span><span class="self">self</span>, id: u32) -&gt; <span class="prelude-ty">Result</span>&lt;(), <span class="self">Self</span>::PreKeyStoreExtError&gt;;
 }
 
 <span class="doccomment">/// Stores messages, contacts, groups and profiles
@@ -564,6 +556,34 @@
         }
     }
 
+    <span class="doccomment">/// Update the expire timer from a [Thread], which corresponds to either [Contact::expire_timer]
+    /// or [Group::disappearing_messages_timer].
+    </span><span class="kw">fn </span>update_expire_timer(
+        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
+        thread: <span class="kw-2">&amp;</span>Thread,
+        timer: u32,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;(), <span class="self">Self</span>::ContentsStoreError&gt; {
+        <span class="macro">log::trace!</span>(<span class="string">&quot;update expire timer of {:?} to {}&quot;</span>, thread, timer);
+        <span class="kw">match </span>thread {
+            Thread::Contact(uuid) =&gt; {
+                <span class="kw">let </span>contact = <span class="self">self</span>.contact_by_id(uuid)<span class="question-mark">?</span>;
+                <span class="kw">if let </span><span class="prelude-val">Some</span>(<span class="kw-2">mut </span>contact) = contact {
+                    contact.expire_timer = timer;
+                    <span class="self">self</span>.save_contact(<span class="kw-2">&amp;</span>contact)<span class="question-mark">?</span>;
+                }
+                <span class="prelude-val">Ok</span>(())
+            }
+            Thread::Group(key) =&gt; {
+                <span class="kw">let </span>group = <span class="self">self</span>.group(<span class="kw-2">*</span>key)<span class="question-mark">?</span>;
+                <span class="kw">if let </span><span class="prelude-val">Some</span>(<span class="kw-2">mut </span>g) = group {
+                    g.disappearing_messages_timer = <span class="prelude-val">Some</span>(Timer { duration: timer });
+                    <span class="self">self</span>.save_group(<span class="kw-2">*</span>key, <span class="kw-2">&amp;</span>g)<span class="question-mark">?</span>;
+                }
+                <span class="prelude-val">Ok</span>(())
+            }
+        }
+    }
+
     <span class="comment">// Contacts
 
     </span><span class="doccomment">/// Clear all saved synchronized contact data
@@ -628,7 +648,7 @@
 <span class="doccomment">/// The manager store trait combining all other stores into a single one
 </span><span class="kw">pub trait </span>Store:
     StateStore&lt;StateStoreError = <span class="self">Self</span>::Error&gt;
-    + PreKeyStoreExt&lt;PreKeyStoreExtError = <span class="self">Self</span>::Error&gt;
+    + PreKeysStore
     + ContentsStore&lt;ContentsStoreError = <span class="self">Self</span>::Error&gt;
     + ProtocolStore
     + SenderKeyStore
