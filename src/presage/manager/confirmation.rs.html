@@ -153,6 +153,7 @@
 <a href="#153" id="153">153</a>
 <a href="#154" id="154">154</a>
 <a href="#155" id="155">155</a>
+<a href="#156" id="156">156</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>libsignal_service::configuration::{ServiceConfiguration, SignalServers};
 <span class="kw">use </span>libsignal_service::messagepipe::ServiceCredentials;
 <span class="kw">use </span>libsignal_service::prelude::phonenumber::PhoneNumber;
@@ -206,7 +207,8 @@
         } = <span class="self">self</span>.state;
 
         <span class="kw">let </span>credentials = ServiceCredentials {
-            uuid: <span class="prelude-val">None</span>,
+            aci: <span class="prelude-val">None</span>,
+            pni: <span class="prelude-val">None</span>,
             phonenumber: phone_number.clone(),
             password: <span class="prelude-val">Some</span>(password.clone()),
             signaling_key: <span class="prelude-val">None</span>,
