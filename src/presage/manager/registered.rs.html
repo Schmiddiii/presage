@@ -1,4 +1,5 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `presage/src/manager/registered.rs`."><title>registered.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-492a78a4a87dcc01.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="presage" data-themes="" data-resource-suffix="" data-rustdoc-version="1.82.0 (f6e511eec 2024-10-15)" data-channel="1.82.0" data-search-js="search-a99f1315e7cc5121.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../static.files/storage-118b08c4c78b968e.js"></script><script defer src="../../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-921df33f47b8780c.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-3b12f09e550e0385.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `presage/src/manager/registered.rs`."><title>registered.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../../static.files/rustdoc-42caa33d.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="presage" data-themes="" data-resource-suffix="" data-rustdoc-version="1.84.0 (9fc6b4312 2025-01-07)" data-channel="1.84.0" data-search-js="search-92e6798f.js" data-settings-js="settings-0f613d39.js" ><script src="../../../static.files/storage-59e33391.js"></script><script defer src="../../../static.files/src-script-56102188.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-5f194d8c.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-893ab5e7.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-6580c154.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-044be391.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="main-heading"><h1><div class="sub-heading">presage/manager/</div>registered.rs</h1><rustdoc-toolbar></rustdoc-toolbar></div><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers">
+<a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -1595,32 +1596,9 @@
 <a href="#1595" id="1595">1595</a>
 <a href="#1596" id="1596">1596</a>
 <a href="#1597" id="1597">1597</a>
-<a href="#1598" id="1598">1598</a>
-<a href="#1599" id="1599">1599</a>
-<a href="#1600" id="1600">1600</a>
-<a href="#1601" id="1601">1601</a>
-<a href="#1602" id="1602">1602</a>
-<a href="#1603" id="1603">1603</a>
-<a href="#1604" id="1604">1604</a>
-<a href="#1605" id="1605">1605</a>
-<a href="#1606" id="1606">1606</a>
-<a href="#1607" id="1607">1607</a>
-<a href="#1608" id="1608">1608</a>
-<a href="#1609" id="1609">1609</a>
-<a href="#1610" id="1610">1610</a>
-<a href="#1611" id="1611">1611</a>
-<a href="#1612" id="1612">1612</a>
-<a href="#1613" id="1613">1613</a>
-<a href="#1614" id="1614">1614</a>
-<a href="#1615" id="1615">1615</a>
-<a href="#1616" id="1616">1616</a>
-<a href="#1617" id="1617">1617</a>
-<a href="#1618" id="1618">1618</a>
-<a href="#1619" id="1619">1619</a>
-</pre></div><pre class="rust"><code><span class="kw">use </span>std::fmt;
-<span class="kw">use </span>std::pin::pin;
+<a href="#1598" id="1598">1598</a></pre></div><pre class="rust"><code><span class="kw">use </span>std::fmt;
 <span class="kw">use </span>std::sync::{Arc, OnceLock};
-<span class="kw">use </span>std::time::{Duration, SystemTime, UNIX_EPOCH};
+<span class="kw">use </span>std::time::{SystemTime, UNIX_EPOCH};
 
 <span class="kw">use </span>futures::{future, AsyncReadExt, Stream, StreamExt};
 <span class="kw">use </span>libsignal_service::attachment_cipher::decrypt_in_place;
@@ -1637,11 +1615,13 @@
     AttachmentPointer, DataMessage, EditMessage, GroupContextV2, NullMessage, SyncMessage,
     Verified,
 };
-<span class="kw">use </span>libsignal_service::protocol::{IdentityKeyStore, SenderCertificate, ServiceId};
+<span class="kw">use </span>libsignal_service::protocol::{
+    Aci, IdentityKeyStore, SenderCertificate, ServiceId, ServiceIdKind,
+};
 <span class="kw">use </span>libsignal_service::provisioning::{generate_registration_id, ProvisioningError};
 <span class="kw">use </span>libsignal_service::push_service::{
-    AccountAttributes, DeviceCapabilities, DeviceInfo, PushService, ServiceError, ServiceIdType,
-    ServiceIds, WhoAmIResponse, DEFAULT_DEVICE_ID,
+    AccountAttributes, DeviceCapabilities, DeviceInfo, PushService, ServiceError, ServiceIds,
+    WhoAmIResponse, DEFAULT_DEVICE_ID,
 };
 <span class="kw">use </span>libsignal_service::receiver::MessageReceiver;
 <span class="kw">use </span>libsignal_service::sender::{AttachmentSpec, AttachmentUploadError};
@@ -1651,9 +1631,9 @@
 <span class="kw">use </span>libsignal_service::websocket::SignalWebSocket;
 <span class="kw">use </span>libsignal_service::zkgroup::groups::{GroupMasterKey, GroupSecretParams};
 <span class="kw">use </span>libsignal_service::zkgroup::profiles::ProfileKey;
-<span class="kw">use </span>libsignal_service::{cipher, AccountManager, Profile, ServiceAddress};
-<span class="kw">use </span>rand::rngs::StdRng;
-<span class="kw">use </span>rand::SeedableRng;
+<span class="kw">use </span>libsignal_service::{cipher, AccountManager, Profile, ServiceIdExt};
+<span class="kw">use </span>rand::rngs::ThreadRng;
+<span class="kw">use </span>rand::thread_rng;
 <span class="kw">use </span>serde::{Deserialize, Serialize};
 <span class="kw">use </span>sha2::Digest;
 <span class="kw">use </span>tokio::sync::Mutex;
@@ -1665,8 +1645,10 @@
 <span class="kw">use </span><span class="kw">crate</span>::store::{ContentsStore, Sticker, StickerPack, StickerPackManifest, Store, Thread};
 <span class="kw">use crate</span>::{model::groups::Group, AvatarBytes, Error, Manager};
 
-<span class="kw">type </span>ServiceCipher&lt;S&gt; = cipher::ServiceCipher&lt;S, StdRng&gt;;
-<span class="kw">type </span>MessageSender&lt;S&gt; = libsignal_service::prelude::MessageSender&lt;S, StdRng&gt;;
+<span class="kw">pub use </span><span class="kw">crate</span>::model::messages::Received;
+
+<span class="kw">type </span>ServiceCipher&lt;S&gt; = cipher::ServiceCipher&lt;S&gt;;
+<span class="kw">type </span>MessageSender&lt;S&gt; = libsignal_service::prelude::MessageSender&lt;S, ThreadRng&gt;;
 
 <span class="attr">#[derive(Clone, Debug, PartialEq, Eq)]
 </span><span class="kw">pub enum </span>RegistrationType {
@@ -1733,16 +1715,6 @@
 }
 
 <span class="kw">impl </span>RegistrationData {
-    <span class="doccomment">/// Account identity
-    </span><span class="kw">pub fn </span>aci(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Uuid {
-        <span class="self">self</span>.service_ids.aci
-    }
-
-    <span class="doccomment">/// Phone number identity
-    </span><span class="kw">pub fn </span>pni(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Uuid {
-        <span class="self">self</span>.service_ids.pni
-    }
-
     <span class="doccomment">/// Our own profile key
     </span><span class="kw">pub fn </span>profile_key(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; ProfileKey {
         <span class="self">self</span>.profile_key
@@ -1765,7 +1737,6 @@
             </span>.ok_or(Error::NotYetRegisteredError)<span class="question-mark">?</span>;
 
         <span class="kw">let </span><span class="kw-2">mut </span>manager = <span class="self">Self </span>{
-            rng: StdRng::from_entropy(),
             store,
             state: Registered::with_data(registration_data),
         };
@@ -1877,21 +1848,23 @@
             <span class="prelude-val">Some</span>(<span class="self">self</span>.state.data.profile_key),
         );
 
+        <span class="kw">let </span><span class="kw-2">mut </span>rng = thread_rng();
+
         account_manager
             .update_pre_key_bundle(
                 <span class="kw-2">&amp;mut </span><span class="self">self</span>.store.aci_protocol_store(),
-                ServiceIdType::AccountIdentity,
-                <span class="kw-2">&amp;mut </span><span class="self">self</span>.rng,
+                ServiceIdKind::Aci,
                 <span class="bool-val">true</span>,
+                <span class="kw-2">&amp;mut </span>rng,
             )
             .<span class="kw">await</span><span class="question-mark">?</span>;
 
         account_manager
             .update_pre_key_bundle(
                 <span class="kw-2">&amp;mut </span><span class="self">self</span>.store.pni_protocol_store(),
-                ServiceIdType::PhoneNumberIdentity,
-                <span class="kw-2">&amp;mut </span><span class="self">self</span>.rng,
+                ServiceIdKind::Pni,
                 <span class="bool-val">true</span>,
+                <span class="kw-2">&amp;mut </span>rng,
             )
             .<span class="kw">await</span><span class="question-mark">?</span>;
 
@@ -1911,7 +1884,7 @@
                 pni_registration_id
             } <span class="kw">else </span>{
                 <span class="macro">info!</span>(<span class="string">"migrating to PNI"</span>);
-                <span class="kw">let </span>pni_registration_id = generate_registration_id(<span class="kw-2">&amp;mut </span>StdRng::from_entropy());
+                <span class="kw">let </span>pni_registration_id = generate_registration_id(<span class="kw-2">&amp;mut </span>thread_rng());
                 <span class="self">self</span>.store.save_registration_data(<span class="kw-2">&amp;</span><span class="self">self</span>.state.data).<span class="kw">await</span><span class="question-mark">?</span>;
                 pni_registration_id
             };
@@ -1954,29 +1927,6 @@
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="doccomment">/// Requests contacts synchronization and waits until the primary device sends them
-    ///
-    /// Note: DO NOT call this function if you're already running a receiving loop
-    </span><span class="kw">pub async fn </span>sync_contacts(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&lt;S::Error&gt;&gt; {
-        <span class="macro">debug!</span>(<span class="string">"synchronizing contacts"</span>);
-
-        <span class="kw">let </span><span class="kw-2">mut </span>messages = <span class="macro">pin!</span>(
-            <span class="self">self</span>.receive_messages(ReceivingMode::WaitForContacts)
-                .<span class="kw">await</span><span class="question-mark">?
-        </span>);
-
-        <span class="self">self</span>.request_contacts().<span class="kw">await</span><span class="question-mark">?</span>;
-
-        tokio::time::timeout(Duration::from_secs(<span class="number">60</span>), <span class="kw">async move </span>{
-            <span class="kw">while let </span><span class="prelude-val">Some</span>(msg) = messages.next().<span class="kw">await </span>{
-                <span class="macro">trace!</span>(<span class="question-mark">?</span>msg, <span class="string">"got message while waiting for contacts sync:"</span>);
-            }
-        })
-        .<span class="kw">await</span><span class="question-mark">?</span>;
-
-        <span class="prelude-val">Ok</span>(())
-    }
-
     <span class="doccomment">/// Request the primary device to encrypt &amp; send all of its contacts.
     ///
     /// **Note**: If successful, the contacts are not yet received and stored, but will only be
@@ -1987,7 +1937,7 @@
             request: <span class="prelude-val">Some</span>(sync_message::Request {
                 r#type: <span class="prelude-val">Some</span>(sync_message::request::Type::Contacts.into()),
             }),
-            ..SyncMessage::with_padding()
+            ..SyncMessage::with_padding(<span class="kw-2">&amp;mut </span>thread_rng())
         };
 
         <span class="kw">let </span>timestamp = SystemTime::now()
@@ -1995,12 +1945,8 @@
             .expect(<span class="string">"Time went backwards"</span>)
             .as_millis() <span class="kw">as </span>u64;
 
-        <span class="self">self</span>.send_message(
-            ServiceAddress::from_aci(<span class="self">self</span>.state.data.service_ids.aci),
-            sync_message,
-            timestamp,
-        )
-        .<span class="kw">await</span><span class="question-mark">?</span>;
+        <span class="self">self</span>.send_message(<span class="self">self</span>.state.data.service_ids.aci(), sync_message, timestamp)
+            .<span class="kw">await</span><span class="question-mark">?</span>;
 
         <span class="prelude-val">Ok</span>(())
     }
@@ -2071,26 +2017,32 @@
     <span class="doccomment">/// Fetches the profile of the provided user by UUID and profile key.
     </span><span class="kw">pub async fn </span>retrieve_profile_by_uuid(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
-        uuid: Uuid,
+        aci: <span class="kw">impl </span>Into&lt;Aci&gt;,
         profile_key: ProfileKey,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;Profile, Error&lt;S::Error&gt;&gt; {
+        <span class="kw">let </span>aci = aci.into();
+
         <span class="comment">// Check if profile is cached.
         // TODO: Create a migration in the store removing all profiles.
         // TODO: Is there some way to know if this is outdated?
-        </span><span class="kw">if let </span><span class="prelude-val">Some</span>(profile) = <span class="self">self</span>.store.profile(uuid, profile_key).<span class="kw">await</span>.ok().flatten() {
+        </span><span class="kw">if let </span><span class="prelude-val">Some</span>(profile) = <span class="self">self
+            </span>.store
+            .profile(aci.into(), profile_key)
+            .<span class="kw">await
+            </span>.ok()
+            .flatten()
+        {
             <span class="kw">return </span><span class="prelude-val">Ok</span>(profile);
         }
 
         <span class="kw">let </span><span class="kw-2">mut </span>account_manager =
             AccountManager::new(<span class="self">self</span>.identified_push_service(), <span class="prelude-val">Some</span>(profile_key));
 
-        <span class="kw">let </span>profile = account_manager
-            .retrieve_profile(ServiceAddress::from_aci(uuid))
-            .<span class="kw">await</span><span class="question-mark">?</span>;
+        <span class="kw">let </span>profile = account_manager.retrieve_profile(aci).<span class="kw">await</span><span class="question-mark">?</span>;
 
         <span class="kw">let _ </span>= <span class="self">self
             </span>.store
-            .save_profile(uuid, profile_key, profile.clone())
+            .save_profile(aci.into(), profile_key, profile.clone())
             .<span class="kw">await</span>;
         <span class="prelude-val">Ok</span>(profile)
     }
@@ -2118,7 +2070,7 @@
 
         <span class="kw">let </span><span class="kw-2">mut </span>gm = <span class="self">self</span>.groups_manager()<span class="question-mark">?</span>;
         <span class="kw">let </span><span class="prelude-val">Some</span>(group) = upsert_group(
-            <span class="self">self</span>.store(),
+            <span class="kw-2">&amp;</span><span class="self">self</span>.store,
             <span class="kw-2">&amp;mut </span>gm,
             context.master_key(),
             <span class="kw-2">&amp;</span>context.revision(),
@@ -2181,7 +2133,7 @@
         <span class="kw">let </span>len = avatar_stream.read_to_end(<span class="kw-2">&amp;mut </span>contents).<span class="kw">await</span><span class="question-mark">?</span>;
         contents.truncate(len);
 
-        <span class="kw">let </span>cipher = ProfileCipher::from(profile_key);
+        <span class="kw">let </span>cipher = ProfileCipher::new(profile_key);
 
         <span class="kw">let </span>avatar = cipher.decrypt_avatar(<span class="kw-2">&amp;</span>contents)<span class="question-mark">?</span>;
         <span class="kw">let _ </span>= <span class="self">self
@@ -2190,29 +2142,6 @@
             .<span class="kw">await</span>;
         <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(avatar))
     }
-
-    <span class="kw">async fn </span>receive_messages_encrypted(
-        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw">impl </span>Stream&lt;Item = <span class="prelude-ty">Result</span>&lt;Incoming, ServiceError&gt;&gt;, Error&lt;S::Error&gt;&gt; {
-        <span class="kw">let </span>credentials = <span class="self">self</span>.credentials().ok_or(Error::NotYetRegisteredError)<span class="question-mark">?</span>;
-        <span class="kw">let </span>ws = <span class="self">self</span>.identified_websocket(<span class="bool-val">true</span>).<span class="kw">await</span><span class="question-mark">?</span>;
-        <span class="kw">let </span>pipe = MessagePipe::from_socket(ws, credentials);
-        <span class="prelude-val">Ok</span>(pipe.stream())
-    }
-
-    <span class="doccomment">/// Starts receiving and storing messages.
-    ///
-    /// As a client, it is heavily recommended to run this once in `ReceivingMode::InitialSync` once
-    /// before enabling the possiblity of sending messages. That way, all possible updates (sessions, profile keys, sender keys)
-    /// are processed _before_ trying to encrypt and send messages which might fail otherwise.
-    ///
-    /// Returns a [futures::Stream] of messages to consume. Messages will also be stored by the implementation of the [Store].
-    </span><span class="kw">pub async fn </span>receive_messages(
-        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
-        mode: ReceivingMode,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw">impl </span>Stream&lt;Item = Content&gt;, Error&lt;S::Error&gt;&gt; {
-        <span class="self">self</span>.receive_messages_stream(mode).<span class="kw">await
-    </span>}
 
     <span class="kw">fn </span>groups_manager(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;GroupsManager&lt;InMemoryCredentialsCache&gt;, Error&lt;S::Error&gt;&gt; {
         <span class="kw">let </span>service_configuration = <span class="self">self</span>.state.service_configuration();
@@ -2229,32 +2158,47 @@
         <span class="prelude-val">Ok</span>(groups_manager)
     }
 
-    <span class="kw">async fn </span>receive_messages_stream(
+    <span class="kw">async fn </span>receive_messages_encrypted(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
-        mode: ReceivingMode,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw">impl </span>Stream&lt;Item = Content&gt;, Error&lt;S::Error&gt;&gt; {
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw">impl </span>Stream&lt;Item = <span class="prelude-ty">Result</span>&lt;Incoming, ServiceError&gt;&gt;, Error&lt;S::Error&gt;&gt; {
+        <span class="kw">let </span>credentials = <span class="self">self</span>.credentials().ok_or(Error::NotYetRegisteredError)<span class="question-mark">?</span>;
+        <span class="kw">let </span>ws = <span class="self">self</span>.identified_websocket(<span class="bool-val">true</span>).<span class="kw">await</span><span class="question-mark">?</span>;
+        <span class="kw">let </span>pipe = MessagePipe::from_socket(ws, credentials);
+        <span class="prelude-val">Ok</span>(pipe.stream())
+    }
+
+    <span class="doccomment">/// Starts receiving and storing messages.
+    ///
+    /// As a client, it is heavily recommended to process incoming messages and wait for the `Received::QueueEmpty` messages
+    /// until giving the ability for users to send messages. That way, all possible updates (sessions, profile keys, sender keys)
+    /// are processed _before_ trying to encrypt and send messages, which might get rejected by recipients otherwise.
+    ///
+    /// Returns a [futures::Stream] of messages to consume. Messages will also be stored by the implementation of the [Store].
+    </span><span class="kw">pub async fn </span>receive_messages(
+        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw">impl </span>Stream&lt;Item = Received&gt;, Error&lt;S::Error&gt;&gt; {
         <span class="kw">struct </span>StreamState&lt;Receiver, Store, AciStore, PniStore&gt; {
+            store: Store,
+            push_service: PushService,
+            csprng: ThreadRng,
             encrypted_messages: Receiver,
             message_receiver: MessageReceiver,
             service_cipher_aci: ServiceCipher&lt;AciStore&gt;,
             service_cipher_pni: ServiceCipher&lt;PniStore&gt;,
-            push_service: PushService,
-            store: Store,
             groups_manager: GroupsManager&lt;InMemoryCredentialsCache&gt;,
-            mode: ReceivingMode,
         }
 
         <span class="kw">let </span>push_service = <span class="self">self</span>.identified_push_service();
 
         <span class="kw">let </span>init = StreamState {
+            store: <span class="self">self</span>.store.clone(),
+            push_service: push_service.clone(),
+            csprng: thread_rng(),
             encrypted_messages: Box::pin(<span class="self">self</span>.receive_messages_encrypted().<span class="kw">await</span><span class="question-mark">?</span>),
-            message_receiver: MessageReceiver::new(push_service.clone()),
+            message_receiver: MessageReceiver::new(push_service),
             service_cipher_aci: <span class="self">self</span>.new_service_cipher_aci(),
             service_cipher_pni: <span class="self">self</span>.new_service_cipher_pni(),
-            push_service,
-            store: <span class="self">self</span>.store.clone(),
             groups_manager: <span class="self">self</span>.groups_manager()<span class="question-mark">?</span>,
-            mode,
         };
 
         <span class="macro">debug!</span>(<span class="string">"starting to consume incoming message stream"</span>);
@@ -2269,10 +2213,16 @@
                                 envelope.destination_service_id(),
                             ) {
                                 <span class="prelude-val">None </span>| <span class="prelude-val">Some</span>(ServiceId::Aci(<span class="kw">_</span>)) =&gt; {
-                                    state.service_cipher_aci.open_envelope(envelope).<span class="kw">await
+                                    state
+                                        .service_cipher_aci
+                                        .open_envelope(envelope, <span class="kw-2">&amp;mut </span>state.csprng)
+                                        .<span class="kw">await
                                 </span>}
                                 <span class="prelude-val">Some</span>(ServiceId::Pni(<span class="kw">_</span>)) =&gt; {
-                                    state.service_cipher_pni.open_envelope(envelope).<span class="kw">await
+                                    state
+                                        .service_cipher_pni
+                                        .open_envelope(envelope, <span class="kw-2">&amp;mut </span>state.csprng)
+                                        .<span class="kw">await
                                 </span>}
                             }
                         };
@@ -2302,9 +2252,7 @@
                                         }
                                     }
 
-                                    <span class="kw">if let </span>ReceivingMode::WaitForContacts = state.mode {
-                                        <span class="kw">return </span><span class="prelude-val">None</span>;
-                                    }
+                                    <span class="kw">return </span><span class="prelude-val">Some</span>((Received::Contacts, state));
                                 }
 
                                 <span class="comment">// sticker pack operations
@@ -2418,10 +2366,10 @@
                                     <span class="macro">error!</span>(%error, <span class="string">"error saving message to store"</span>);
                                 }
 
-                                <span class="kw">return </span><span class="prelude-val">Some</span>((content, state));
+                                <span class="kw">return </span><span class="prelude-val">Some</span>((Received::Content(Box::new(content)), state));
                             }
                             <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>) =&gt; {
-                                <span class="macro">debug!</span>(<span class="string">"empty envelope..., message will be skipped!"</span>)
+                                <span class="macro">debug!</span>(<span class="string">"empty envelope, message will be skipped!"</span>)
                             }
                             <span class="prelude-val">Err</span>(error) =&gt; {
                                 <span class="macro">error!</span>(%error, <span class="string">"error opening envelope, message will be skipped!"</span>);
@@ -2429,10 +2377,8 @@
                         }
                     }
                     <span class="prelude-val">Some</span>(<span class="prelude-val">Ok</span>(Incoming::QueueEmpty)) =&gt; {
-                        <span class="macro">debug!</span>(<span class="string">"empty queue"</span>);
-                        <span class="kw">if let </span>ReceivingMode::InitialSync = state.mode {
-                            <span class="kw">return </span><span class="prelude-val">None</span>;
-                        }
+                        <span class="macro">debug!</span>(<span class="string">"got empty queue"</span>);
+                        <span class="kw">return </span><span class="prelude-val">Some</span>((Received::QueueEmpty, state));
                     }
                     <span class="prelude-val">Some</span>(<span class="prelude-val">Err</span>(error)) =&gt; {
                         <span class="macro">error!</span>(%error, <span class="string">"unexpected error in message receiving loop"</span>)
@@ -2443,7 +2389,7 @@
         }))
     }
 
-    <span class="doccomment">/// Sends a messages to the provided [ServiceAddress].
+    <span class="doccomment">/// Sends a messages to the provided [ServiceId].
     /// The timestamp should be set to now and is used by Signal mobile apps
     /// to order messages later, and apply reactions.
     ///
@@ -2452,19 +2398,19 @@
     /// it will be used as is, and the expire timer version will be incremented.
     </span><span class="kw">pub async fn </span>send_message(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
-        recipient_addr: <span class="kw">impl </span>Into&lt;ServiceAddress&gt;,
+        recipient: <span class="kw">impl </span>Into&lt;ServiceId&gt;,
         message: <span class="kw">impl </span>Into&lt;ContentBody&gt;,
         timestamp: u64,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&lt;S::Error&gt;&gt; {
         <span class="kw">let </span><span class="kw-2">mut </span>sender = <span class="self">self</span>.new_message_sender().<span class="kw">await</span><span class="question-mark">?</span>;
+        <span class="kw">let </span>recipient = recipient.into();
 
         <span class="kw">let </span>online_only = <span class="bool-val">false</span>;
         <span class="comment">// TODO: Populate this flag based on the recipient information
         //
         // Issue &lt;https://github.com/whisperfish/presage/issues/252&gt;
         </span><span class="kw">let </span>include_pni_signature = <span class="bool-val">false</span>;
-        <span class="kw">let </span>recipient = recipient_addr.into();
-        <span class="kw">let </span>thread = Thread::Contact(recipient.uuid);
+        <span class="kw">let </span>thread = Thread::Contact(recipient.raw_uuid());
         <span class="kw">let </span><span class="kw-2">mut </span>content_body: ContentBody = message.into();
 
         <span class="self">self</span>.restore_thread_timer(<span class="kw-2">&amp;</span>thread, <span class="kw-2">&amp;mut </span>content_body).<span class="kw">await</span>;
@@ -2472,7 +2418,7 @@
         <span class="kw">let </span>sender_certificate = <span class="self">self</span>.sender_certificate().<span class="kw">await</span><span class="question-mark">?</span>;
         <span class="kw">let </span>unidentified_access =
             <span class="self">self</span>.store
-                .profile_key(<span class="kw-2">&amp;</span>recipient.uuid)
+                .profile_key(<span class="kw-2">&amp;</span>recipient.raw_uuid())
                 .<span class="kw">await</span><span class="question-mark">?
                 </span>.map(|profile_key| UnidentifiedAccess {
                     key: profile_key.derive_access_key().to_vec(),
@@ -2486,6 +2432,8 @@
                 .get_or_insert(<span class="self">self</span>.state.data.profile_key().get_bytes().to_vec());
             message.required_protocol_version = <span class="prelude-val">Some</span>(<span class="number">0</span>);
         }
+
+        ensure_data_message_timestamp(<span class="kw-2">&amp;mut </span>content_body, timestamp);
 
         sender
             .send_message(
@@ -2501,7 +2449,7 @@
         <span class="comment">// save the message
         </span><span class="kw">let </span>content = Content {
             metadata: Metadata {
-                sender: ServiceAddress::from_aci(<span class="self">self</span>.state.data.service_ids.aci),
+                sender: <span class="self">self</span>.state.data.service_ids.aci().into(),
                 sender_device: <span class="self">self</span>.state.device_id(),
                 destination: recipient,
                 server_guid: <span class="prelude-val">None</span>,
@@ -2551,6 +2499,7 @@
         <span class="kw">let </span>thread = Thread::Group(master_key_bytes);
 
         <span class="self">self</span>.restore_thread_timer(<span class="kw-2">&amp;</span>thread, <span class="kw-2">&amp;mut </span>content_body).<span class="kw">await</span>;
+        ensure_data_message_timestamp(<span class="kw-2">&amp;mut </span>content_body, timestamp);
 
         <span class="kw">let </span><span class="kw-2">mut </span>sender = <span class="self">self</span>.new_message_sender().<span class="kw">await</span><span class="question-mark">?</span>;
 
@@ -2576,9 +2525,9 @@
                         key: profile_key.derive_access_key().to_vec(),
                         certificate: sender_certificate.clone(),
                     });
-            <span class="kw">let </span>include_pni_signature = <span class="bool-val">true</span>;
+            <span class="kw">let </span>include_pni_signature = <span class="bool-val">false</span>;
             recipients.push((
-                ServiceAddress::from_aci(member.uuid),
+                Aci::from(member.uuid).into(),
                 unidentified_access,
                 include_pni_signature,
             ));
@@ -2595,8 +2544,8 @@
             .find(|res| <span class="kw">match </span>res {
                 <span class="prelude-val">Ok</span>(<span class="kw">_</span>) =&gt; <span class="bool-val">false</span>,
                 <span class="comment">// Ignore any NotFound errors, those mean that e.g. some contact in a group deleted his account.
-                </span><span class="prelude-val">Err</span>(MessageSenderError::NotFound { addr }) =&gt; {
-                    <span class="macro">debug!</span>(uuid = %addr.uuid, <span class="string">"UUID not found, skipping sent message result"</span>);
+                </span><span class="prelude-val">Err</span>(MessageSenderError::NotFound { service_id }) =&gt; {
+                    <span class="macro">debug!</span>(service_id = %service_id.service_id_string(), <span class="string">"recipient not found, skipping sent message result"</span>);
                     <span class="bool-val">false
                 </span>}
                 <span class="comment">// return first error if any
@@ -2606,8 +2555,8 @@
 
         <span class="kw">let </span>content = Content {
             metadata: Metadata {
-                sender: ServiceAddress::from_aci(<span class="self">self</span>.state.data.service_ids.aci),
-                destination: ServiceAddress::from_aci(<span class="self">self</span>.state.data.service_ids.aci),
+                sender: <span class="self">self</span>.state.data.service_ids.aci().into(),
+                destination: <span class="self">self</span>.state.data.service_ids.aci().into(),
                 sender_device: <span class="self">self</span>.state.device_id(),
                 server_guid: <span class="prelude-val">None</span>,
                 timestamp,
@@ -2641,8 +2590,8 @@
         }
     }
 
-    <span class="doccomment">/// Clears all sessions established wiht [recipient](ServiceAddress).
-    </span><span class="kw">pub async fn </span>clear_sessions(<span class="kw-2">&amp;</span><span class="self">self</span>, recipient: <span class="kw-2">&amp;</span>ServiceAddress) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&lt;S::Error&gt;&gt; {
+    <span class="doccomment">/// Clears all sessions established with [recipient](ServiceId).
+    </span><span class="kw">pub async fn </span>clear_sessions(<span class="kw-2">&amp;</span><span class="self">self</span>, recipient: <span class="kw-2">&amp;</span>ServiceId) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&lt;S::Error&gt;&gt; {
         <span class="kw">use </span>libsignal_service::session_store::SessionStoreExt;
         <span class="self">self</span>.store
             .aci_protocol_store()
@@ -2725,12 +2674,8 @@
             .expect(<span class="string">"Time went backwards"</span>)
             .as_millis() <span class="kw">as </span>u64;
 
-        <span class="self">self</span>.send_message(
-            ServiceAddress::from_aci(<span class="self">self</span>.state.data.aci()),
-            sync_message,
-            timestamp,
-        )
-        .<span class="kw">await</span><span class="question-mark">?</span>;
+        <span class="self">self</span>.send_message(<span class="self">self</span>.state.data.service_ids.aci(), sync_message, timestamp)
+            .<span class="kw">await</span><span class="question-mark">?</span>;
 
         <span class="prelude-val">Ok</span>(())
     }
@@ -2756,12 +2701,8 @@
             .expect(<span class="string">"Time went backwards"</span>)
             .as_millis() <span class="kw">as </span>u64;
 
-        <span class="self">self</span>.send_message(
-            ServiceAddress::from_aci(<span class="self">self</span>.state.data.aci()),
-            sync_message,
-            timestamp,
-        )
-        .<span class="kw">await</span><span class="question-mark">?</span>;
+        <span class="self">self</span>.send_message(<span class="self">self</span>.state.data.service_ids.aci(), sync_message, timestamp)
+            .<span class="kw">await</span><span class="question-mark">?</span>;
 
         <span class="self">self</span>.store.remove_sticker_pack(pack_id).<span class="kw">await</span><span class="question-mark">?</span>;
 
@@ -2770,10 +2711,10 @@
 
     <span class="kw">pub async fn </span>send_session_reset(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
-        recipient: <span class="kw-2">&amp;</span>ServiceAddress,
+        recipient: <span class="kw-2">&amp;</span>ServiceId,
         timestamp: u64,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&lt;S::Error&gt;&gt; {
-        <span class="macro">trace!</span>(%recipient.uuid, <span class="string">"resetting session for address"</span>);
+        <span class="macro">trace!</span>(recipient = %recipient.service_id_string(), <span class="string">"resetting session for address"</span>);
         <span class="kw">let </span>message = DataMessage {
             flags: <span class="prelude-val">Some</span>(DataMessageFlags::EndSession <span class="kw">as </span>u32),
             ..Default::default()
@@ -2813,10 +2754,10 @@
             unidentified_websocket,
             <span class="self">self</span>.identified_push_service(),
             <span class="self">self</span>.new_service_cipher_aci(),
-            <span class="self">self</span>.rng.clone(),
+            thread_rng(),
             aci_protocol_store,
-            ServiceAddress::from_aci(<span class="self">self</span>.state.data.service_ids.aci),
-            ServiceAddress::from_pni(<span class="self">self</span>.state.data.service_ids.pni),
+            <span class="self">self</span>.state.data.service_ids.aci,
+            <span class="self">self</span>.state.data.service_ids.pni,
             aci_identity_keypair,
             <span class="prelude-val">Some</span>(pni_identity_keypair),
             <span class="self">self</span>.state.device_id().into(),
@@ -2826,7 +2767,6 @@
     <span class="kw">fn </span>new_service_cipher_aci(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; ServiceCipher&lt;S::AciStore&gt; {
         ServiceCipher::new(
             <span class="self">self</span>.store.aci_protocol_store(),
-            <span class="self">self</span>.rng.clone(),
             <span class="self">self</span>.state
                 .service_configuration()
                 .unidentified_sender_trust_root,
@@ -2838,7 +2778,6 @@
     <span class="kw">fn </span>new_service_cipher_pni(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; ServiceCipher&lt;S::PniStore&gt; {
         ServiceCipher::new(
             <span class="self">self</span>.store.pni_protocol_store(),
-            <span class="self">self</span>.rng.clone(),
             <span class="self">self</span>.state
                 .service_configuration()
                 .unidentified_sender_trust_root,
@@ -2880,7 +2819,7 @@
     }
 
     <span class="doccomment">/// As a primary device, link a secondary device.
-    </span><span class="kw">pub async fn </span>link_secondary(<span class="kw-2">&amp;</span><span class="self">self</span>, secondary: Url) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&lt;S::Error&gt;&gt; {
+    </span><span class="kw">pub async fn </span>link_secondary(<span class="kw-2">&amp;mut </span><span class="self">self</span>, secondary: Url) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&lt;S::Error&gt;&gt; {
         <span class="comment">// XXX: What happens if secondary device? Possible to use static typing to make this method call impossible in that case?
         </span><span class="kw">if </span><span class="self">self</span>.registration_type() != RegistrationType::Primary {
             <span class="kw">return </span><span class="prelude-val">Err</span>(Error::NotPrimaryDevice);
@@ -2891,13 +2830,13 @@
             <span class="self">self</span>.identified_push_service(),
             <span class="prelude-val">Some</span>(<span class="self">self</span>.state.data.profile_key),
         );
-        <span class="kw">let </span>store = <span class="self">self</span>.store();
 
         account_manager
             .link_device(
+                <span class="kw-2">&amp;mut </span>thread_rng(),
                 secondary,
-                <span class="kw-2">&amp;</span>store.aci_protocol_store(),
-                <span class="kw-2">&amp;</span>store.pni_protocol_store(),
+                <span class="kw-2">&amp;</span><span class="self">self</span>.store.aci_protocol_store(),
+                <span class="kw-2">&amp;</span><span class="self">self</span>.store.pni_protocol_store(),
                 credentials,
                 <span class="prelude-val">None</span>,
             )
@@ -2929,18 +2868,30 @@
     }
 }
 
-<span class="doccomment">/// The mode receiving messages stream
-</span><span class="attr">#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
-</span><span class="kw">pub enum </span>ReceivingMode {
-    <span class="doccomment">/// Don't stop the stream
-    </span><span class="attr">#[default]
-    </span>Forever,
-    <span class="doccomment">/// Stop the stream after the initial sync
-    ///
-    /// That is, when the Signal's message queue becomes empty.
-    </span>InitialSync,
-    <span class="doccomment">/// Stop the stream after contacts are synced
-    </span>WaitForContacts,
+<span class="doccomment">/// Set the timestamp in any DataMessage so it matches its envelope's
+</span><span class="kw">fn </span>ensure_data_message_timestamp(content_body: <span class="kw-2">&amp;mut </span>ContentBody, timestamp: u64) {
+    <span class="kw">match </span>content_body {
+        ContentBody::DataMessage(message) =&gt; {
+            message.timestamp = <span class="prelude-val">Some</span>(timestamp);
+        }
+        ContentBody::EditMessage(EditMessage {
+            data_message: <span class="prelude-val">Some</span>(data_message),
+            ..
+        }) =&gt; {
+            data_message.timestamp = <span class="prelude-val">Some</span>(timestamp);
+        }
+        ContentBody::SynchronizeMessage(SyncMessage {
+            sent:
+                <span class="prelude-val">Some</span>(sync_message::Sent {
+                    message: <span class="prelude-val">Some</span>(data_message),
+                    ..
+                }),
+            ..
+        }) =&gt; {
+            data_message.timestamp = <span class="prelude-val">Some</span>(timestamp);
+        }
+        <span class="kw">_ </span>=&gt; (),
+    }
 }
 
 <span class="kw">async fn </span>upsert_group&lt;S: Store&gt;(
@@ -2963,7 +2914,10 @@
 
     <span class="kw">if </span>upsert_group {
         <span class="macro">debug!</span>(<span class="string">"fetching and saving group"</span>);
-        <span class="kw">match </span>groups_manager.fetch_encrypted_group(master_key_bytes).<span class="kw">await </span>{
+        <span class="kw">match </span>groups_manager
+            .fetch_encrypted_group(<span class="kw-2">&amp;mut </span>thread_rng(), master_key_bytes)
+            .<span class="kw">await
+        </span>{
             <span class="prelude-val">Ok</span>(encrypted_group) =&gt; {
                 <span class="kw">let </span>group = decrypt_group(master_key_bytes, encrypted_group)<span class="question-mark">?</span>;
                 <span class="kw">if let </span><span class="prelude-val">Err</span>(error) = store.save_group(master_key_bytes.try_into()<span class="question-mark">?</span>, group).<span class="kw">await </span>{
@@ -3088,58 +3042,59 @@
         }) =&gt; {
             <span class="comment">// update recipient profile key if changed
             </span><span class="kw">if let </span><span class="prelude-val">Some</span>(profile_key_bytes) = profile_key.clone().and_then(|p| p.try_into().ok()) {
-                <span class="kw">let </span>sender_uuid = message.metadata.sender.uuid;
+                <span class="kw">let </span>sender = message.metadata.sender;
                 <span class="kw">let </span>profile_key = ProfileKey::create(profile_key_bytes);
-                <span class="macro">debug!</span>(%sender_uuid, <span class="string">"inserting profile key for"</span>);
+                <span class="macro">debug!</span>(sender = %sender.service_id_string(), <span class="string">"inserting profile key for"</span>);
 
                 <span class="comment">// Either:
                 // - insert a new contact with the profile information
                 // - update the contact if the profile key has changed
                 // TODO: mark this contact as "created by us" maybe to know whether we should update it or not
-                </span><span class="kw">if </span>store.contact_by_id(<span class="kw-2">&amp;</span>sender_uuid).<span class="kw">await</span><span class="question-mark">?</span>.is_none()
+                </span><span class="kw">if </span>store.contact_by_id(<span class="kw-2">&amp;</span>sender.raw_uuid()).<span class="kw">await</span><span class="question-mark">?</span>.is_none()
                     || !store
-                        .profile_key(<span class="kw-2">&amp;</span>sender_uuid)
+                        .profile_key(<span class="kw-2">&amp;</span>sender.raw_uuid())
                         .<span class="kw">await</span><span class="question-mark">?
                         </span>.is_some_and(|p| p.bytes == profile_key.bytes)
                 {
-                    <span class="kw">let </span>encrypted_profile = push_service
-                        .retrieve_profile_by_id(
-                            ServiceAddress::from_aci(sender_uuid),
-                            <span class="prelude-val">Some</span>(profile_key),
-                        )
-                        .<span class="kw">await</span><span class="question-mark">?</span>;
-                    <span class="kw">let </span>profile_cipher = ProfileCipher::from(profile_key);
-                    <span class="kw">let </span>decrypted_profile = encrypted_profile.decrypt(profile_cipher).unwrap();
+                    <span class="kw">if let </span><span class="prelude-val">Some</span>(aci) = sender.aci() {
+                        <span class="kw">let </span>sender_uuid: Uuid = aci.into();
+                        <span class="kw">let </span>encrypted_profile = push_service
+                            .retrieve_profile_by_id(aci, <span class="prelude-val">Some</span>(profile_key))
+                            .<span class="kw">await</span><span class="question-mark">?</span>;
+                        <span class="kw">let </span>profile_cipher = ProfileCipher::new(profile_key);
+                        <span class="kw">let </span>decrypted_profile = profile_cipher.decrypt(encrypted_profile).unwrap();
 
-                    <span class="kw">let </span>contact = Contact {
-                        uuid: sender_uuid,
-                        phone_number: <span class="prelude-val">None</span>,
-                        name: decrypted_profile
-                            .name
-                            <span class="comment">// FIXME: this assumes [firstname] [lastname]
-                            </span>.map(|pn| {
-                                <span class="kw">if let </span><span class="prelude-val">Some</span>(family_name) = pn.family_name {
-                                    <span class="macro">format!</span>(<span class="string">"{} {}"</span>, pn.given_name, family_name)
-                                } <span class="kw">else </span>{
-                                    pn.given_name
-                                }
-                            })
-                            .unwrap_or_default(),
-                        profile_key: profile_key.bytes.to_vec(),
-                        color: <span class="prelude-val">None</span>,
-                        expire_timer: data_message.expire_timer.unwrap_or_default(),
-                        expire_timer_version: data_message.expire_timer_version.unwrap_or(<span class="number">1</span>),
-                        inbox_position: <span class="number">0</span>,
-                        archived: <span class="bool-val">false</span>,
-                        avatar: <span class="prelude-val">None</span>,
-                        verified: Verified::default(),
-                    };
+                        <span class="kw">let </span>contact = Contact {
+                            uuid: sender_uuid,
+                            phone_number: <span class="prelude-val">None</span>,
+                            name: decrypted_profile
+                                .name
+                                <span class="comment">// FIXME: this assumes [firstname] [lastname]
+                                </span>.map(|pn| {
+                                    <span class="kw">if let </span><span class="prelude-val">Some</span>(family_name) = pn.family_name {
+                                        <span class="macro">format!</span>(<span class="string">"{} {}"</span>, pn.given_name, family_name)
+                                    } <span class="kw">else </span>{
+                                        pn.given_name
+                                    }
+                                })
+                                .unwrap_or_default(),
+                            profile_key: profile_key.bytes.to_vec(),
+                            color: <span class="prelude-val">None</span>,
+                            expire_timer: data_message.expire_timer.unwrap_or_default(),
+                            expire_timer_version: data_message.expire_timer_version.unwrap_or(<span class="number">1</span>),
+                            inbox_position: <span class="number">0</span>,
+                            archived: <span class="bool-val">false</span>,
+                            avatar: <span class="prelude-val">None</span>,
+                            verified: Verified::default(),
+                        };
 
-                    <span class="macro">info!</span>(%sender_uuid, <span class="string">"saved contact on first sight"</span>);
-                    store.save_contact(<span class="kw-2">&amp;</span>contact).<span class="kw">await</span><span class="question-mark">?</span>;
+                        <span class="macro">info!</span>(%sender_uuid, <span class="string">"saved contact on first sight"</span>);
+                        store.save_contact(<span class="kw-2">&amp;</span>contact).<span class="kw">await</span><span class="question-mark">?</span>;
+                        store.upsert_profile_key(<span class="kw-2">&amp;</span>sender_uuid, profile_key).<span class="kw">await</span><span class="question-mark">?</span>;
+                    } <span class="kw">else </span>{
+                        <span class="macro">debug!</span>(<span class="string">"not storing profile for PNI contact"</span>);
+                    }
                 }
-
-                store.upsert_profile_key(<span class="kw-2">&amp;</span>sender_uuid, profile_key).<span class="kw">await</span><span class="question-mark">?</span>;
             }
 
             <span class="kw">if let </span><span class="prelude-val">Some</span>(expire_timer) = data_message.expire_timer {
@@ -3159,7 +3114,7 @@
                 } =&gt; {
                     <span class="comment">// replace an existing message by an empty NullMessage
                     </span><span class="kw">if let </span><span class="prelude-val">Some</span>(<span class="kw-2">mut </span>existing_msg) = store.message(<span class="kw-2">&amp;</span>thread, <span class="kw-2">*</span>ts).<span class="kw">await</span><span class="question-mark">? </span>{
-                        existing_msg.metadata.sender.uuid = Uuid::nil();
+                        existing_msg.metadata.sender = Aci::from(Uuid::nil()).into();
                         existing_msg.body = NullMessage::default().into();
                         store.save_message(<span class="kw-2">&amp;</span>thread, existing_msg).<span class="kw">await</span><span class="question-mark">?</span>;
                         <span class="macro">debug!</span>(%thread, ts, <span class="string">"message in thread deleted"</span>);
@@ -3204,28 +3159,31 @@
             call_event: <span class="prelude-val">Some</span>(<span class="kw">_</span>),
             ..
         }) =&gt; <span class="prelude-val">Some</span>(message),
-        ContentBody::SynchronizeMessage(<span class="kw">_</span>) =&gt; {
-            <span class="macro">debug!</span>(<span class="string">"skipping saving sync message without interesting fields"</span>);
+        ContentBody::SynchronizeMessage(msg) =&gt; {
+            <span class="macro">debug!</span>(
+                <span class="question-mark">?</span>msg,
+                <span class="string">"skipping saving sync message without interesting fields"
+            </span>);
             <span class="prelude-val">None
         </span>}
-        ContentBody::ReceiptMessage(<span class="kw">_</span>) =&gt; {
-            <span class="macro">debug!</span>(<span class="string">"skipping saving receipt message"</span>);
+        ContentBody::ReceiptMessage(msg) =&gt; {
+            <span class="macro">debug!</span>(<span class="question-mark">?</span>msg, <span class="string">"skipping saving receipt message"</span>);
             <span class="prelude-val">None
         </span>}
-        ContentBody::TypingMessage(<span class="kw">_</span>) =&gt; {
-            <span class="macro">debug!</span>(<span class="string">"skipping saving typing message"</span>);
+        ContentBody::TypingMessage(msg) =&gt; {
+            <span class="macro">debug!</span>(<span class="question-mark">?</span>msg, <span class="string">"skipping saving typing message"</span>);
             <span class="prelude-val">None
         </span>}
-        ContentBody::StoryMessage(<span class="kw">_</span>) =&gt; {
-            <span class="macro">debug!</span>(<span class="string">"skipping story message"</span>);
+        ContentBody::StoryMessage(msg) =&gt; {
+            <span class="macro">debug!</span>(<span class="question-mark">?</span>msg, <span class="string">"skipping story message"</span>);
             <span class="prelude-val">None
         </span>}
-        ContentBody::PniSignatureMessage(<span class="kw">_</span>) =&gt; {
-            <span class="macro">debug!</span>(<span class="string">"skipping PNI signature message"</span>);
+        ContentBody::PniSignatureMessage(msg) =&gt; {
+            <span class="macro">debug!</span>(<span class="question-mark">?</span>msg, <span class="string">"skipping PNI signature message"</span>);
             <span class="prelude-val">None
         </span>}
-        ContentBody::EditMessage(<span class="kw">_</span>) =&gt; {
-            <span class="macro">debug!</span>(<span class="string">"invalid edited"</span>);
+        ContentBody::EditMessage(msg) =&gt; {
+            <span class="macro">debug!</span>(<span class="question-mark">?</span>msg, <span class="string">"invalid edited"</span>);
             <span class="prelude-val">None
         </span>}
     };
