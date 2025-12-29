@@ -3,6 +3,7 @@ use std::sync::{Arc, OnceLock};
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use futures::{future, AsyncReadExt, Stream, StreamExt};
+use libsignal_service::prelude::{MasterKey, StorageServiceKey};
 use libsignal_service::{
     attachment_cipher::decrypt_in_place,
     cipher,
@@ -412,6 +413,33 @@ impl<S: Store> Manager<S, Registered> {
             .expect("logic error"))
     }
 
+    async fn master_key(&self) -> Result<MasterKey, Error<S::Error>> {
+        let from_store = self.store().fetch_master_key().await?;
+
+        if let Some(key) = from_store {
+            Ok(key)
+        } else {
+            let key = MasterKey::generate(&mut rand::rng());
+            self.store().store_master_key(Some(&key)).await?;
+            Ok(key)
+        }
+    }
+
+    async fn storage_service_key(&self) -> Result<StorageServiceKey, Error<S::Error>> {
+        let from_store = self.store().fetch_storage_service_key().await?;
+
+        if let Some(key) = from_store {
+            Ok(key)
+        } else {
+            let master_key = self.master_key().await?;
+            let storage_service_key = StorageServiceKey::from_master_key(&master_key);
+            self.store()
+                .store_storage_service_key(Some(&storage_service_key))
+                .await?;
+            Ok(storage_service_key)
+        }
+    }
+
     pub async fn submit_recaptcha_challenge(
         &self,
         token: &str,
@@ -612,6 +640,7 @@ impl<S: Store> Manager<S, Registered> {
             service_cipher_pni: ServiceCipher<PniStore>,
             groups_manager: GroupsManager<InMemoryCredentialsCache>,
             service_ids: ServiceIds,
+            message_sender: MessageSender<AciStore>,
         }
 
         let push_service = self.identified_push_service();
@@ -625,6 +654,7 @@ impl<S: Store> Manager<S, Registered> {
             service_cipher_pni: self.new_service_cipher_pni(),
             groups_manager: self.groups_manager()?,
             service_ids: self.state.data.service_ids.clone(),
+            message_sender: self.new_message_sender().await?,
         };
 
         debug!("starting to consume incoming message stream");
@@ -660,6 +690,35 @@ impl<S: Store> Manager<S, Registered> {
                         };
                         match envelope {
                             Ok(Some(content)) => {
+                                if let ContentBody::SynchronizeMessage(SyncMessage {
+                                    request: Some(request),
+                                    ..
+                                }) = &content.body
+                                {
+                                    use libsignal_service::content::sync_message::request::Type as RequestType;
+
+                                    match request.r#type() {
+                                        RequestType::Contacts => {
+                                            let result = state
+                                                .message_sender
+                                                .send_contact_details(
+                                                    &ServiceId::Aci(state.service_ids.aci()),
+                                                    None,
+                                                    vec![],
+                                                    false,
+                                                    true,
+                                                )
+                                                .await;
+                                            if let Err(error) = result {
+                                                warn!(%error, "Error sending contact details to other devices");
+                                            }
+                                        }
+                                        t => {
+                                            info!(type = ?t, "Got sync request of currently unhandled type")
+                                        }
+                                    }
+                                }
+
                                 // contacts synchronization sent from the primary device (happens after linking, or on demand)
                                 if let ContentBody::SynchronizeMessage(SyncMessage {
                                     contacts: Some(contacts),
@@ -1298,7 +1357,7 @@ impl<S: Store> Manager<S, Registered> {
                 &self.store.aci_protocol_store(),
                 &self.store.pni_protocol_store(),
                 credentials,
-                None,
+                Some(self.master_key().await?),
             )
             .await?;
         Ok(())

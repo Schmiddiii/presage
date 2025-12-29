@@ -1,5 +1,8 @@
 use presage::{
-    libsignal_service::protocol::SenderCertificate,
+    libsignal_service::{
+        prelude::{MasterKey, StorageServiceKey},
+        protocol::SenderCertificate,
+    },
     store::{StateStore, Store},
 };
 use protocol::{IdentityType, SqliteProtocolStore};
@@ -270,6 +273,54 @@ impl StateStore for SqliteStore {
         let value = certificate.serialized()?;
         query!(
             "INSERT OR REPLACE INTO kv (key, value) VALUES ('sender_certificate', ?)",
+            value
+        )
+        .execute(&self.db)
+        .await?;
+        Ok(())
+    }
+
+    async fn fetch_storage_service_key(
+        &self,
+    ) -> Result<Option<StorageServiceKey>, Self::StateStoreError> {
+        query_scalar!("SELECT value FROM kv WHERE key = 'storage_service_key' LIMIT 1")
+            .fetch_optional(&self.db)
+            .await?
+            .map(|value| StorageServiceKey::from_slice(&value))
+            .transpose()
+            .map_err(|_| SqliteStoreError::InvalidFormat)
+    }
+
+    async fn fetch_master_key(&self) -> Result<Option<MasterKey>, Self::StateStoreError> {
+        query_scalar!("SELECT value FROM kv WHERE key = 'master_key' LIMIT 1")
+            .fetch_optional(&self.db)
+            .await?
+            .map(|value| MasterKey::from_slice(&value))
+            .transpose()
+            .map_err(|_| SqliteStoreError::InvalidFormat)
+    }
+
+    async fn store_storage_service_key(
+        &self,
+        storage_key: Option<&StorageServiceKey>,
+    ) -> Result<(), Self::StateStoreError> {
+        let value = storage_key.map(|k| &k.inner[..]);
+        query!(
+            "INSERT OR REPLACE INTO kv (key, value) VALUES ('storage_service_key', ?)",
+            value
+        )
+        .execute(&self.db)
+        .await?;
+        Ok(())
+    }
+
+    async fn store_master_key(
+        &self,
+        master_key: Option<&MasterKey>,
+    ) -> Result<(), Self::StateStoreError> {
+        let value = master_key.map(|k| &k.inner[..]);
+        query!(
+            "INSERT OR REPLACE INTO kv (key, value) VALUES ('master_key', ?)",
             value
         )
         .execute(&self.db)

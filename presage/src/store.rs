@@ -6,7 +6,7 @@ use libsignal_service::{
     content::{ContentBody, Metadata},
     groups_v2::Timer,
     pre_keys::PreKeysStore,
-    prelude::{Content, ProfileKey, Uuid, UuidError},
+    prelude::{Content, MasterKey, ProfileKey, StorageServiceKey, Uuid, UuidError},
     proto::{
         sync_message::{self, Sent},
         verified, DataMessage, EditMessage, GroupContextV2, SyncMessage, Verified,
@@ -71,6 +71,24 @@ pub trait StateStore {
 
     /// Clear registration data (including keys), but keep received messages, groups and contacts.
     fn clear_registration(&mut self) -> impl Future<Output = Result<(), Self::StateStoreError>>;
+
+    fn fetch_storage_service_key(
+        &self,
+    ) -> impl Future<Output = Result<Option<StorageServiceKey>, Self::StateStoreError>>;
+
+    fn fetch_master_key(
+        &self,
+    ) -> impl Future<Output = Result<Option<MasterKey>, Self::StateStoreError>>;
+
+    fn store_storage_service_key(
+        &self,
+        storage_key: Option<&StorageServiceKey>,
+    ) -> impl Future<Output = Result<(), Self::StateStoreError>>;
+
+    fn store_master_key(
+        &self,
+        master_key: Option<&MasterKey>,
+    ) -> impl Future<Output = Result<(), Self::StateStoreError>>;
 }
 
 /// Stores messages, contacts, groups and profiles
