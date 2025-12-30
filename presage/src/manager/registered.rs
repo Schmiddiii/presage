@@ -932,8 +932,8 @@ impl<S: Store> Manager<S, Registered> {
                 unidentified_access,
                 content_body.clone(),
                 timestamp,
-                online_only,
                 include_pni_signature,
+                online_only,
             )
             .await?;
 
