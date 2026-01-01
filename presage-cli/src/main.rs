@@ -111,7 +111,7 @@ enum Cmd {
     #[clap(about = "Unlink device by device id")]
     UnlinkDevice {
         #[clap(long, short = 'd', help = "Device id")]
-        device_id: i64,
+        device_id: u8,
     },
     #[clap(about = "List all linked devices")]
     ListDevices,
@@ -668,7 +668,7 @@ async fn run<S: Store>(subcommand: Cmd, config_store: S) -> anyhow::Result<()> {
 
                 println!(
                     "- Device {} {}\n  Name: {}\n  Created: {}\n  Last seen: {}",
-                    device.id, current_marker, device_name, device.created, device.last_seen,
+                    device.id, current_marker, device_name, device.created_at, device.last_seen,
                 );
             }
         }
