@@ -3,7 +3,7 @@ use std::sync::{Arc, OnceLock};
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use futures::{future, AsyncReadExt, Stream, StreamExt};
-use libsignal_service::prelude::{MasterKey, StorageServiceKey};
+use libsignal_service::prelude::MasterKey;
 use libsignal_service::{
     attachment_cipher::decrypt_in_place,
     cipher,
@@ -425,21 +425,6 @@ impl<S: Store> Manager<S, Registered> {
         }
     }
 
-    async fn storage_service_key(&self) -> Result<StorageServiceKey, Error<S::Error>> {
-        let from_store = self.store().fetch_storage_service_key().await?;
-
-        if let Some(key) = from_store {
-            Ok(key)
-        } else {
-            let master_key = self.master_key().await?;
-            let storage_service_key = StorageServiceKey::from_master_key(&master_key);
-            self.store()
-                .store_storage_service_key(Some(&storage_service_key))
-                .await?;
-            Ok(storage_service_key)
-        }
-    }
-
     pub async fn submit_recaptcha_challenge(
         &self,
         token: &str,
@@ -641,6 +626,7 @@ impl<S: Store> Manager<S, Registered> {
             groups_manager: GroupsManager<InMemoryCredentialsCache>,
             service_ids: ServiceIds,
             message_sender: MessageSender<AciStore>,
+            master_key: MasterKey,
         }
 
         let push_service = self.identified_push_service();
@@ -655,6 +641,7 @@ impl<S: Store> Manager<S, Registered> {
             groups_manager: self.groups_manager()?,
             service_ids: self.state.data.service_ids.clone(),
             message_sender: self.new_message_sender().await?,
+            master_key: self.master_key().await?,
         };
 
         debug!("starting to consume incoming message stream");
@@ -699,12 +686,32 @@ impl<S: Store> Manager<S, Registered> {
 
                                     match request.r#type() {
                                         RequestType::Contacts => {
+                                            let contacts = state
+                                                .store
+                                                .contacts()
+                                                .await
+                                                .map(|i| {
+                                                    i.collect::<Result<Vec<_>, _>>()
+                                                        .unwrap_or_default()
+                                                })
+                                                .unwrap_or_default();
                                             let result = state
                                                 .message_sender
                                                 .send_contact_details(
                                                     &ServiceId::Aci(state.service_ids.aci()),
                                                     None,
-                                                    vec![],
+                                                    contacts.into_iter().map(|c| libsignal_service::sender::ContactDetails {
+                                                        number: c.phone_number.map(|p| p.to_string()),
+                                                        aci: Some(c.uuid.to_string()),
+                                                        name: Some(c.name),
+                                                        avatar: c.avatar.map(|a| libsignal_service::proto::contact_details::Avatar {
+                                                            content_type: Some(a.content_type),
+                                                            length: a.reader.len().try_into().ok(),
+                                                        }),
+                                                        expire_timer: Some(c.expire_timer),
+                                                        expire_timer_version: Some(c.expire_timer_version),
+                                                        inbox_position: None,
+                                                    }),
                                                     false,
                                                     true,
                                                 )
@@ -713,6 +720,35 @@ impl<S: Store> Manager<S, Registered> {
                                                 warn!(%error, "Error sending contact details to other devices");
                                             }
                                         }
+                                        RequestType::Keys => {
+                                            let result = state.message_sender.send_sync_message(SyncMessage {
+                                                keys: Some(libsignal_service::content::sync_message::Keys {
+                                                    master: Some(state.master_key.inner.to_vec()),
+                                                    account_entropy_pool: None,
+                                                    media_root_backup_key: None,
+                                                }),
+                                                ..SyncMessage::with_padding(&mut rand::rng())
+                                            }).await;
+
+                                            if let Err(error) = result {
+                                                warn!(%error, "Error sending keys to other devices");
+                                            }
+                                        }
+                                        RequestType::Blocked => {
+                                            let result = state.message_sender.send_sync_message(SyncMessage {
+                                                blocked: Some(libsignal_service::content::sync_message::Blocked {
+                                                    numbers: vec![],
+                                                    acis: vec![],
+                                                    group_ids: vec![],
+                                                }),
+                                                ..SyncMessage::with_padding(&mut rand::rng())
+                                            }).await;
+
+                                            if let Err(error) = result {
+                                                warn!(%error, "Error sending blocked contacts to other devices");
+                                            }
+                                        }
+                                        // TODO: Configuration
                                         t => {
                                             info!(type = ?t, "Got sync request of currently unhandled type")
                                         }
