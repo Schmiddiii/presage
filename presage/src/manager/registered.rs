@@ -1364,7 +1364,7 @@ impl<S: Store> Manager<S, Registered> {
     }
 
     /// As a primary device, unlink a secondary device.
-    pub async fn unlink_secondary(&self, device_id: i64) -> Result<(), Error<S::Error>> {
+    pub async fn unlink_secondary(&self, device_id: u8) -> Result<(), Error<S::Error>> {
         // secondary devices cannot unlink themselves or other devices, it will fail with an unauthorized error
         if self.registration_type() != RegistrationType::Primary {
             return Err(Error::NotPrimaryDevice);
