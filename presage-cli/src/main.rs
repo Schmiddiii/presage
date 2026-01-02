@@ -17,6 +17,7 @@ use presage::libsignal_service::configuration::SignalServers;
 use presage::libsignal_service::content::Reaction;
 use presage::libsignal_service::pre_keys::PreKeysStore;
 use presage::libsignal_service::prelude::phonenumber::PhoneNumber;
+use presage::libsignal_service::prelude::DeviceId;
 use presage::libsignal_service::prelude::ProfileKey;
 use presage::libsignal_service::prelude::Uuid;
 use presage::libsignal_service::proto::data_message::Quote;
@@ -648,13 +649,17 @@ async fn run<S: Store>(subcommand: Cmd, config_store: S) -> anyhow::Result<()> {
         }
         Cmd::UnlinkDevice { device_id } => {
             let manager = Manager::load_registered(config_store).await?;
-            manager.unlink_secondary(device_id).await?;
+            manager
+                .unlink_secondary(
+                    DeviceId::try_from(device_id).expect("A valid device ID to be given"),
+                )
+                .await?;
             println!("Unlinked device with id: {}", device_id);
         }
         Cmd::ListDevices => {
             let manager = Manager::load_registered(config_store).await?;
             let devices = manager.devices().await?;
-            let current_device_id: u8 = manager.device_id().into();
+            let current_device_id = manager.device_id();
 
             for device in devices {
                 let device_name = device
