@@ -1,7 +1,6 @@
 use std::convert::TryInto;
 use std::path::Path;
 use std::path::PathBuf;
-use std::time::Duration;
 use std::time::UNIX_EPOCH;
 
 use anyhow::{anyhow, bail, Context as _};
@@ -271,8 +270,6 @@ async fn send<S: Store>(
     recipient: Recipient,
     msg: impl Into<ContentBody>,
 ) -> anyhow::Result<()> {
-    let attachments_tmp_dir = attachments_tmp_dir()?;
-
     let timestamp = std::time::SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .expect("Time went backwards")
@@ -283,53 +280,24 @@ async fn send<S: Store>(
         d.timestamp = Some(timestamp);
     }
 
-    let messages = manager
-        .receive_messages()
-        .await
-        .context("failed to initialize messages stream")?;
-    pin_mut!(messages);
-
-    println!("synchronizing messages since last time");
-
-    while let Some(content) = messages.next().await {
-        match content {
-            Received::QueueEmpty => break,
-            Received::Contacts => continue,
-            Received::Content(content) => {
-                process_incoming_message(manager, attachments_tmp_dir.path(), false, &content).await
-            }
-        }
-    }
-
-    println!("done synchronizing, sending your message now!");
-
     match recipient {
         Recipient::Contact(uuid) => {
             info!(recipient =% uuid, "sending message to contact");
             manager
                 .send_message(ServiceId::Aci(uuid.into()), content_body, timestamp)
                 .await
-                .expect("failed to send message");
+                .expect("failed to send message")
         }
         Recipient::Group(master_key) => {
             info!("sending message to group");
             manager
                 .send_message_to_group(&master_key, content_body, timestamp)
                 .await
-                .expect("failed to send message");
+                .expect("failed to send message to group!")
         }
     }
 
-    tokio::time::timeout(Duration::from_secs(60), async move {
-        while let Some(msg) = messages.next().await {
-            if let Received::Contacts = msg {
-                println!("got contacts sync!");
-                break;
-            }
-        }
-    })
-    .await?;
-
+    println!("message sent!");
     Ok(())
 }
 
