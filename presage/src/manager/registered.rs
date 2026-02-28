@@ -8,6 +8,8 @@ use libsignal_service::protocol::{DeviceId, Username};
 use libsignal_service::websocket::account::{
     AccountAttributes, DeviceCapabilities, DeviceInfo, WhoAmIResponse,
 };
+#[cfg(feature = "cdsi")]
+use libsignal_service::websocket::directory::LookupRequest;
 use libsignal_service::{
     attachment_cipher::decrypt_in_place,
     cipher,
@@ -885,7 +887,7 @@ impl<S: Store> Manager<S, Registered> {
     pub async fn discover_contacts_by_phone_number<P: TryIntoE164>(
         &mut self,
         phone_numbers: impl IntoIterator<Item = P>,
-    ) -> Result<Vec<(E164, Option<ServiceId>)>, Error<S::Error>> {
+    ) -> Result<Vec<(PhoneNumber, Option<ServiceId>)>, Error<S::Error>> {
         let mut ws = self.identified_websocket(false).await?;
 
         let lookup_request = LookupRequest {
@@ -896,7 +898,15 @@ impl<S: Store> Manager<S, Registered> {
             ..Default::default()
         };
 
-        Ok(ws.discover_contacts(lookup_request).await?)
+        Ok(ws
+            .discover_contacts(lookup_request)
+            .await?
+            .into_iter()
+            .map(|(e164, service_id)| {
+                use libsignal_service::utils::phonenumber_from_signal;
+                (phonenumber_from_signal(&e164), service_id)
+            })
+            .collect())
     }
 
     /// Resolves a username (which has a text part and an additional random number) to its account identity
