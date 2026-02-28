@@ -4,17 +4,18 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 use futures::{future, AsyncReadExt, Stream, StreamExt};
 use libsignal_service::prelude::MasterKey;
+use libsignal_service::protocol::{DeviceId, Username};
 use libsignal_service::websocket::account::{
     AccountAttributes, DeviceCapabilities, DeviceInfo, WhoAmIResponse,
 };
 use libsignal_service::{
     attachment_cipher::decrypt_in_place,
     cipher,
-    configuration::{ServiceConfiguration, SignalServers, SignalingKey},
+    configuration::{ServiceConfiguration, SignalServers},
     content::{Content, ContentBody, DataMessageFlags, Metadata},
     groups_v2::{decrypt_group, GroupsManager, InMemoryCredentialsCache},
     messagepipe::{Incoming, MessagePipe, ServiceCredentials},
-    prelude::{phonenumber::PhoneNumber, DeviceId, MessageSenderError, ProtobufMessage, Uuid},
+    prelude::{phonenumber::PhoneNumber, MessageSenderError, ProtobufMessage, Uuid},
     profile_cipher::ProfileCipher,
     proto::{
         data_message::Delete,
@@ -29,7 +30,7 @@ use libsignal_service::{
     sender::{AttachmentSpec, AttachmentUploadError},
     sticker_cipher::derive_key,
     unidentified_access::UnidentifiedAccess,
-    utils::serde_signaling_key,
+    utils::TryIntoE164,
     websocket,
     websocket::SignalWebSocket,
     zkgroup::{
@@ -38,6 +39,8 @@ use libsignal_service::{
     },
     AccountManager, Profile, ServiceIdExt,
 };
+#[cfg(feature = "cdsi")]
+use libsignal_service::{protocol::E164, websocket::directory::LookupRequest};
 use rand::rng;
 use serde::{Deserialize, Serialize};
 use sha2::Digest;
@@ -90,8 +93,12 @@ impl Registered {
         }
     }
 
+    fn servers(&self) -> SignalServers {
+        self.data.signal_servers
+    }
+
     fn service_configuration(&self) -> ServiceConfiguration {
-        self.data.signal_servers.into()
+        self.servers().into()
     }
 
     pub fn device_id(&self) -> DeviceId {
@@ -104,11 +111,7 @@ impl Registered {
     pub(crate) fn identified_push_service(&self) -> PushService {
         self.identified_push_service
             .get_or_init(|| {
-                PushService::new(
-                    self.service_configuration(),
-                    Some(self.credentials()),
-                    crate::USER_AGENT,
-                )
+                PushService::new(self.servers(), Some(self.credentials()), crate::USER_AGENT)
             })
             .clone()
     }
@@ -117,9 +120,10 @@ impl Registered {
         ServiceCredentials {
             aci: Some(self.data.service_ids.aci),
             pni: Some(self.data.service_ids.pni),
-            phonenumber: self.data.phone_number.clone(),
+            phonenumber: (&self.data.phone_number)
+                .try_into_e164()
+                .expect("valid phone number"),
             password: Some(self.data.password.clone()),
-            signaling_key: Some(self.data.signaling_key),
             device_id: self.data.device_id.and_then(|d| d.try_into().ok()),
         }
     }
@@ -134,8 +138,6 @@ pub struct RegistrationData {
     #[serde(flatten)]
     pub service_ids: ServiceIds,
     pub(crate) password: String,
-    #[serde(with = "serde_signaling_key")]
-    pub(crate) signaling_key: SignalingKey,
     pub device_id: Option<u32>,
     pub registration_id: u32,
     #[serde(default)]
@@ -205,9 +207,7 @@ impl<S: Store> Manager<S, Registered> {
     fn unidentified_push_service(&self) -> PushService {
         self.state
             .unidentified_push_service
-            .get_or_init(|| {
-                PushService::new(self.state.service_configuration(), None, crate::USER_AGENT)
-            })
+            .get_or_init(|| PushService::new(self.state.servers(), None, crate::USER_AGENT))
             .clone()
     }
 
@@ -577,9 +577,7 @@ impl<S: Store> Manager<S, Registered> {
             None
         };
 
-        let credentials = self.credentials();
-        let encrypted_messages =
-            MessagePipe::from_socket(identified_websocket.clone(), credentials);
+        let encrypted_messages = MessagePipe::from_socket(identified_websocket.clone());
 
         let init = StreamState {
             store: self.store.clone(),
@@ -880,6 +878,37 @@ impl<S: Store> Manager<S, Registered> {
             // if the future resolves *anything* the stream will end
             incoming_messages_stream.take_until(refresh_registration_task),
         ))
+    }
+
+    /// Uses Signal's SGX contact discovery service to resolve a phone number to its matching account identity
+    #[cfg(feature = "cdsi")]
+    pub async fn discover_contacts_by_phone_number<P: TryIntoE164>(
+        &mut self,
+        phone_numbers: impl IntoIterator<Item = P>,
+    ) -> Result<Vec<(E164, Option<ServiceId>)>, Error<S::Error>> {
+        let mut ws = self.identified_websocket(false).await?;
+
+        let lookup_request = LookupRequest {
+            new_e164s: phone_numbers
+                .into_iter()
+                .filter_map(|p| p.try_into_e164().ok())
+                .collect(),
+            ..Default::default()
+        };
+
+        Ok(ws.discover_contacts(lookup_request).await?)
+    }
+
+    /// Resolves a username (which has a text part and an additional random number) to its account identity
+    /// for sending messages.
+    pub async fn lookup_username(
+        &mut self,
+        username: &str,
+    ) -> Result<Option<Aci>, Error<S::Error>> {
+        let username = Username::new(username)?;
+        let mut ws = self.unidentified_websocket().await?;
+        let resolved_username = ws.look_up_username(&username).await?;
+        Ok(resolved_username)
     }
 
     /// Sends a messages to the provided [ServiceId].
@@ -1787,14 +1816,7 @@ async fn set_account_attributes<S: Store>(
             unidentified_access_key: Some(data.profile_key.derive_access_key().to_vec()),
             unrestricted_unidentified_access: false,
             discoverable_by_phone_number: true,
-            capabilities: DeviceCapabilities {
-                gift_badges: true,
-                payment_activation: false,
-                pni: true,
-                sender_key: true,
-                stories: false,
-                ..Default::default()
-            },
+            capabilities: DeviceCapabilities::default(),
         })
         .await?;
 

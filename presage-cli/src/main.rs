@@ -203,6 +203,18 @@ enum Cmd {
         attachment_filepath: Vec<PathBuf>,
     },
     SyncContacts,
+    #[clap(
+        about = "Resolves one or multiple phone numbers to their possible account identity identifier"
+    )]
+    #[cfg(feature = "cdsi")]
+    ResolvePhoneNumber {
+        #[clap(long, short = 'p')]
+        phone_number: Vec<PhoneNumber>,
+    },
+    LookupUsername {
+        #[clap(long, short = 'u')]
+        username: String,
+    },
     #[clap(about = "Print various statistics useful for debugging")]
     Stats,
 }
@@ -919,6 +931,29 @@ async fn run<S: Store>(subcommand: Cmd, store: S) -> anyhow::Result<()> {
                 .filter_map(Result::ok)
             {
                 print_message(&manager, false, &msg).await;
+            }
+        }
+        #[cfg(feature = "cdsi")]
+        Cmd::ResolvePhoneNumber { phone_number } => {
+            let mut manager = load_registered_and_receive(store).await?;
+            let resolved_account_identities = manager
+                .discover_contacts_by_phone_number(phone_number)
+                .await?;
+            for (phone_number, identity) in resolved_account_identities {
+                match identity {
+                    Some(identity) => {
+                        println!("{phone_number} => {}", identity.service_id_string())
+                    }
+                    None => println!("{phone_number} => no account"),
+                }
+            }
+        }
+        Cmd::LookupUsername { username } => {
+            let mut manager = load_registered_and_receive(store).await?;
+            let resolved_service_id = manager.lookup_username(&username).await?;
+            match resolved_service_id {
+                Some(service_id) => println!("{username} => {}", service_id.service_id_string()),
+                None => println!("{username} => no matching account found"),
             }
         }
         Cmd::Stats => {
