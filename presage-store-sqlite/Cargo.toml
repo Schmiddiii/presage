@@ -4,11 +4,12 @@ version = "0.8.0-dev"
 edition = "2024"
 license = "AGPL-3.0-only"
 
-[lib]
-crate-type = ["rlib", "dylib"]
+[features]
+default = ["cdsi"]
+cdsi = ["presage/cdsi"]
 
 [dependencies]
-presage = { path = "../presage" }
+presage = { path = "../presage", default-features = false }
 
 async-trait = "0.1.83"
 bytes = "1.9.0"
