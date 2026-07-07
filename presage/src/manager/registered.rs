@@ -6,14 +6,15 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use chrono::TimeZone;
 use futures::{future, AsyncReadExt, Stream, StreamExt};
 use libsignal_service::libsignal_account_keys::AccountEntropyPool;
+use libsignal_service::prelude::SessionStoreExt;
 use libsignal_service::proto::addressable_message::Author;
-use libsignal_service::protocol::ProtocolAddress;
+use libsignal_service::protocol::{ProtocolAddress, SessionStore};
 use libsignal_service::provisioning::ProvisioningSecrets;
 use libsignal_service::{
     attachment_cipher::decrypt_in_place,
     cipher,
     configuration::{ServiceConfiguration, SignalServers},
-    content::{Content, ContentBody, DataMessageFlags, Metadata},
+    content::{Content, ContentBody, Metadata},
     encrypt_device_name,
     groups_v2::{decrypt_group, GroupsManager, InMemoryCredentialsCache},
     messagepipe::{Incoming, MessagePipe, ServiceCredentials},
@@ -1480,11 +1481,35 @@ impl<S: Store> Manager<S, Registered> {
         timestamp: u64,
     ) -> Result<(), Error<S::Error>> {
         trace!(recipient = %recipient.service_id_string(), "resetting session for address");
-        let message = DataMessage {
-            flags: Some(DataMessageFlags::EndSession as u32),
-            ..Default::default()
-        };
 
+        let mut store = self.store.aci_protocol_store();
+
+        // Archive all sessions with all receiver devices.
+        // Note that the "get_sub_device_sessions" does not include the main device, therefore add it.
+        // Note that deleting the session is not equivalent to archiving:
+        // If we deleted the session, we would also delete the information on the list of devices the peer has, failing message sending.
+        for device in store
+            .get_sub_device_sessions(recipient)
+            .await?
+            .into_iter()
+            .chain(vec![*DEFAULT_DEVICE_ID])
+        {
+            let address = recipient
+                .aci()
+                .expect("Recipient to be given as ACI")
+                .to_protocol_address(device)
+                .expect("Could not construct protocol address from recipient");
+            if let Some(mut session) = store.load_session(&address).await? {
+                session.archive_current_state()?;
+                store.store_session(&address, &session).await?;
+            }
+        }
+
+        // TODO: Signal Android also deletes entries in some sender_key_shared table; we don't have such a table yet.
+        // Does not seem necessary though.
+
+        // Send a null message.
+        let message = NullMessage::generate(&mut rand::rng());
         self.send_message(*recipient, message, timestamp).await?;
 
         Ok(())
