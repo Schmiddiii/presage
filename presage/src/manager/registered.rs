@@ -1,11 +1,14 @@
 use std::fmt;
+use std::str::FromStr;
 use std::sync::{Arc, OnceLock};
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use chrono::TimeZone;
 use futures::{future, AsyncReadExt, Stream, StreamExt};
+use libsignal_service::libsignal_account_keys::AccountEntropyPool;
 use libsignal_service::proto::addressable_message::Author;
 use libsignal_service::protocol::ProtocolAddress;
+use libsignal_service::provisioning::ProvisioningSecrets;
 use libsignal_service::{
     attachment_cipher::decrypt_in_place,
     cipher,
@@ -329,15 +332,31 @@ impl<S: Store> Manager<S, Registered> {
             .expect("logic error"))
     }
 
-    async fn master_key(&self) -> Result<MasterKey, Error<S::Error>> {
+    async fn master_key(&self) -> Result<Option<MasterKey>, Error<S::Error>> {
         let from_store = self.store().fetch_master_key().await?;
 
         if let Some(key) = from_store {
-            Ok(key)
+            Ok(Some(key))
         } else {
-            let key = MasterKey::generate(&mut rand::rng());
-            self.store().store_master_key(Some(&key)).await?;
-            Ok(key)
+            let aep = self.account_entropy_pool().await?;
+            Ok(aep.map(|aep| {
+                MasterKey::from_slice(aep.derive_svr_key().as_slice())
+                    .expect("Derived SVR key from account entropy pool to be a valid master key")
+            }))
+        }
+    }
+
+    async fn account_entropy_pool(&self) -> Result<Option<AccountEntropyPool>, Error<S::Error>> {
+        let from_store = self.store().fetch_account_entropy_pool().await?;
+
+        if let Some(key) = from_store {
+            Ok(Some(key))
+        } else if self.registration_type() == RegistrationType::Primary {
+            let key = AccountEntropyPool::generate(&mut rand::rng());
+            self.store().store_account_entropy_pool(Some(&key)).await?;
+            Ok(Some(key))
+        } else {
+            Ok(None)
         }
     }
 
@@ -578,7 +597,9 @@ impl<S: Store> Manager<S, Registered> {
             groups_manager: GroupsManager<InMemoryCredentialsCache>,
             service_ids: ServiceIds,
             message_sender: MessageSender<AciStore>,
-            master_key: MasterKey,
+            master_key: Option<MasterKey>,
+            account_entropy_pool: Option<AccountEntropyPool>,
+            registration_type: RegistrationType,
         }
 
         let identified_push_service = self.identified_push_service();
@@ -629,6 +650,8 @@ impl<S: Store> Manager<S, Registered> {
             service_ids: self.state.data.service_ids.clone(),
             message_sender: self.new_message_sender().await?,
             master_key: self.master_key().await?,
+            account_entropy_pool: self.account_entropy_pool().await?,
+            registration_type: self.registration_type(),
         };
 
         debug!("starting to consume incoming message stream");
@@ -726,11 +749,19 @@ impl<S: Store> Manager<S, Registered> {
                                             RequestType::Keys => {
                                                 let mut message_sender =
                                                     state.message_sender.clone();
+                                                let account_entropy_pool = state
+                                                    .account_entropy_pool
+                                                    .as_ref()
+                                                    .map(|aep| aep.to_string());
+                                                let master = state
+                                                    .master_key
+                                                    .as_ref()
+                                                    .map(|m| m.inner.to_vec());
                                                 tokio::task::spawn_local(async move {
                                                     let result = message_sender.send_sync_message(SyncMessage {
                                                         keys: Some(libsignal_service::content::sync_message::Keys {
-                                                            master: Some(state.master_key.inner.to_vec()),
-                                                            account_entropy_pool: None,
+                                                            master,
+                                                            account_entropy_pool,
                                                             media_root_backup_key: None,
                                                         }),
                                                         ..SyncMessage::with_padding(&mut rand::rng())
@@ -855,6 +886,71 @@ impl<S: Store> Manager<S, Registered> {
                                         }
                                     }
 
+                                    // key synchronization sent from the primary device
+                                    if let ContentBody::SynchronizeMessage(SyncMessage {
+                                        keys: Some(keys),
+                                        ..
+                                    }) = &content.body
+                                    {
+                                        debug!("received key sync message");
+                                        if state.registration_type == RegistrationType::Primary {
+                                            warn!("received a key sync message as a primary device; ignoring")
+                                        } else {
+                                            match keys
+                                                .account_entropy_pool
+                                                .as_ref()
+                                                .map(|s| AccountEntropyPool::from_str(s))
+                                            {
+                                                Some(Ok(aep)) => {
+                                                    if let Err(error) = state
+                                                        .store
+                                                        .store_account_entropy_pool(Some(&aep))
+                                                        .await
+                                                    {
+                                                        error!(%error, "failed to store account entropy pool");
+                                                    }
+                                                    state.account_entropy_pool = Some(aep);
+                                                }
+                                                Some(Err(error)) => {
+                                                    warn!(%error, "cannot convert account entropy pool from string")
+                                                }
+                                                None => {}
+                                            }
+                                            match keys
+                                                .master
+                                                .as_ref()
+                                                .map(|m| MasterKey::from_slice(m.as_slice()))
+                                            {
+                                                Some(Ok(master)) => {
+                                                    if let Err(error) = state
+                                                        .store
+                                                        .store_master_key(Some(&master))
+                                                        .await
+                                                    {
+                                                        error!(%error, "failed to store master key");
+                                                    }
+                                                    state.master_key = Some(master);
+                                                }
+                                                Some(Err(error)) => {
+                                                    warn!(%error, "cannot convert master key from bytes; trying to populate from account entropy pool");
+                                                    if let Some(aep) =
+                                                        state.account_entropy_pool.as_ref()
+                                                    {
+                                                        state.master_key = Some(MasterKey::from_slice(aep.derive_svr_key().as_slice()).expect("svr key derived from account entropy pool to be a master key"));
+                                                    }
+                                                }
+                                                None => {
+                                                    trace!("master key not given in the sync message; trying to populate from account entropy pool");
+                                                    if let Some(aep) =
+                                                        state.account_entropy_pool.as_ref()
+                                                    {
+                                                        state.master_key = Some(MasterKey::from_slice(aep.derive_svr_key().as_slice()).expect("svr key derived from account entropy pool to be a master key"));
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+
                                     // group update
                                     if let ContentBody::DataMessage(DataMessage {
                                         group_v2:
@@ -921,6 +1017,27 @@ impl<S: Store> Manager<S, Registered> {
                         }
                         Some(Ok(Incoming::QueueEmpty)) => {
                             debug!("got empty queue");
+                            if state.account_entropy_pool.is_none() {
+                                debug!("device does not have the needed keys; requesting from primary device");
+
+                                let mut message_sender = state.message_sender.clone();
+                                tokio::task::spawn_local(async move {
+                                    let result = message_sender
+                                        .send_sync_message(SyncMessage {
+                                            request: Some(sync_message::Request {
+                                                r#type: Some(
+                                                    sync_message::request::Type::Keys.into(),
+                                                ),
+                                            }),
+                                            ..SyncMessage::with_padding(&mut rand::rng())
+                                        })
+                                        .await;
+
+                                    if let Err(error) = result {
+                                        warn!(%error, "Error sending blocked contacts to other devices");
+                                    }
+                                });
+                            }
                             return Some((Received::QueueEmpty, state));
                         }
                         Some(Err(error)) => {
@@ -1482,8 +1599,16 @@ impl<S: Store> Manager<S, Registered> {
                 secondary,
                 &self.store.aci_protocol_store(),
                 &self.store.pni_protocol_store(),
-                credentials,
-                Some(self.master_key().await?),
+                ProvisioningSecrets {
+                    credentials,
+                    account_entropy_pool: self
+                        .account_entropy_pool()
+                        .await?
+                        .expect("Primary device to always have an account entropy pool"),
+                    master_key: self.master_key().await?,
+                    ephemeral_backup_key: None,
+                    media_root_backup_key: None,
+                },
             )
             .await?;
         Ok(())
@@ -1941,7 +2066,14 @@ async fn set_account_attributes<S: Store>(
             registration_lock: None,
             unidentified_access_key: Some(data.profile_key.derive_access_key().to_vec()),
             unrestricted_unidentified_access: false,
-            capabilities: DeviceCapabilities::default(),
+            capabilities: DeviceCapabilities {
+                storage: true,
+                transfer: false,
+                attachment_backfill: false,
+                spqr: true,
+                profiles_v2: false,
+                username_change_sync_message: true,
+            },
             discoverable_by_phone_number: true,
             pin: None,
             recovery_password: None,

@@ -125,7 +125,14 @@ impl<S: Store> Manager<S, Confirmation> {
                     registration_lock: None,
                     unidentified_access_key: Some(profile_key.derive_access_key().to_vec()),
                     unrestricted_unidentified_access: false, // TODO: make this configurable?
-                    capabilities: DeviceCapabilities::default(),
+                    capabilities: DeviceCapabilities {
+                        storage: true,
+                        transfer: false,
+                        attachment_backfill: false,
+                        spqr: true,
+                        profiles_v2: false,
+                        username_change_sync_message: true,
+                    },
                     discoverable_by_phone_number: true,
                     pin: None,
                     recovery_password: None,
